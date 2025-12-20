@@ -9,8 +9,8 @@ from flask import Blueprint, jsonify
 import jwt
 
 # Creamos el Blueprint para el modulo de autenticacion
-autenticacion_bp = Blueprint('autenticacion_bp', __name__)
+auth_v1_bp = Blueprint('auth_v1_bp', __name__)
 
-@autenticacion_bp.route('/', methods=['GET'])
+@auth_v1_bp.route('/', methods=['GET'])
 def helloWorld():
     return jsonify({'mensaje': 'OK'})

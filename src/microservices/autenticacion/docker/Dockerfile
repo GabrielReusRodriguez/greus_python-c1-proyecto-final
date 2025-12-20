@@ -9,9 +9,8 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copio la aplicación
-RUN mkdir /app/recursos
 COPY  ["run.py", "app.py", "config.cfg", "./"] 
-COPY recursos/ /app/recursos  
+COPY modules/ /app/modules
 
 # Expone el puerto del Docker
 EXPOSE 2203

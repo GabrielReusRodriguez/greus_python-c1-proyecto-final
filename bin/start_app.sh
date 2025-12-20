@@ -36,20 +36,29 @@ DEPLOY_FOLDER="${SCRIPT_DIR}/../deploy/"
 rm -rf "${DEPLOY_FOLDER}"
 mkdir "${DEPLOY_FOLDER}"
 
+# Deploy del microservicio de autenticacion.
 echo -e "\t  Autenticacion..."
+# Me quedo con la carpeta base del microservicio y cambio a la carpeta del microservicio
 MICROSERVICE_FOLDER="${SCRIPT_DIR}/../src/microservices/autenticacion"
 cd "${MICROSERVICE_FOLDER}"
 #cp classes.
+# Copio los ficheros para crear y ejecutar el docker
 cp ${MICROSERVICE_FOLDER}/docker/* "${DEPLOY_FOLDER}"
+# Copio la config.
 cp "${MICROSERVICE_FOLDER}/config.cfg" "${DEPLOY_FOLDER}"
+# Copio los ficheros pyhton (run.py y app.py)
 cp ${MICROSERVICE_FOLDER}/*.py "${DEPLOY_FOLDER}"
-cp -r ${MICROSERVICE_FOLDER}/recursos "${DEPLOY_FOLDER}/recursos"
+# Copio la carpeta con los blueprints y la lógica del microservicio.
+cp -r ${MICROSERVICE_FOLDER}/modules "${DEPLOY_FOLDER}/modules"
+# Copio la carpeta de clases auxiliares.
 cp -r "${MICROSERVICE_FOLDER}/../../classes" "${DEPLOY_FOLDER}/classes"
 
+# Voy a la carpeta de deploy.
 cd "${DEPLOY_FOLDER}"
 # Mando construir la imagen.
 ./build.sh
 # ejecuto el contenedor.
 ./run.sh
 
+#Vuelvo a la carpeta inicial
 cd ${ACTUAL_PATH}
