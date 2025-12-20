@@ -5,9 +5,10 @@ Script del microservicio responsable de crear los tokens JWT.
 
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 import jwt
+import modules.v1.modelos.usuario
 
 # Creamos el Blueprint para el modulo de autenticacion
 auth_v1_bp = Blueprint('auth_v1_bp', __name__)
@@ -16,8 +17,8 @@ auth_v1_bp = Blueprint('auth_v1_bp', __name__)
 @auth_v1_bp.route('/login', methods=['GET'])
 def login():
     # Obtenemos las credenciales de acceso que nos envia el usuario.
-    credenciales = request.get_json()
-    if credenciales is None:
-        return jsonify({'mensaje': 'No hemos recibido las credenciales'}), 401, {'Content-type' : 'application/json'}
+    #credenciales = request.get_json()
+    #if credenciales is None:
+    #    return jsonify({'mensaje': 'No hemos recibido las credenciales'}), 401, {'Content-type' : 'application/json'}
 
-    return jsonify({'mensaje': 'OK'})
+    return jsonify({'mensaje': 'OK'}), 200, {'Content-type' : 'application/json'}

@@ -9,7 +9,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copio la aplicación
-COPY  ["run.py", "app.py", "config.cfg", "./"] 
+COPY  ["run.py", "app.py", "db.py", "config.cfg", "./"] 
 COPY modules/ /app/modules
 
 # Expone el puerto del Docker
