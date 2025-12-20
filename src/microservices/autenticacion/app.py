@@ -1,5 +1,5 @@
 from flask import Flask
-from modules.v1.auth_bp import auth_v1_bp
+from modules.v1.recursos.auth_bp import auth_v1_bp
 
 # Creo la app y registro los blueprints.
 def create_app():
