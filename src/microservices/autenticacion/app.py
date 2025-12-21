@@ -1,5 +1,6 @@
 # Ponemos esto para evitar el error de dependencias circulares.
 # from __future__ import annotations
+
 import os
 import configparser
 from flask import Flask
@@ -7,6 +8,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 from modules.v1.recursos.auth_bp import auth_v1_bp
 from db import db
+
+#import modules.v1.modelos.usuario
+from modules.v1.modelos.usuario import Usuario
 
 #db = None
 app = None
@@ -30,16 +34,22 @@ def create_app():
 
     # Creo el acceso a la BBDD SQLite.
     app.config['SQLALCHEMY_DATABASE_URI'] = config['SQLALchemy']['url']
-
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
     # Registro los blueprints, podría hacerlo con cualquier version
     #app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/v1')
     app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/')
 
     db.init_app(app)
     #Inicializo el SQLAlchemy
-#    db = SQLAlchemy(app)
     # Creo e Inicializo las tablas
     with app.app_context():
         db.create_all()
-    
+    #    requests.post(url=f"http://localhost:")    
+    #    # Agrego un usuario admin by default.
+        user = Usuario(username = 'gabriel', password = 'pwd', rol = 'admin')
+        db.session.add(user)
+        db.session.commit()
+
+    # Creo el usuario admin
     return app
