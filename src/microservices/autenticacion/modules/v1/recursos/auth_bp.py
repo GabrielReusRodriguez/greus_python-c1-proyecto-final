@@ -8,24 +8,45 @@ Script del microservicio responsable de crear los tokens JWT.
 from flask import Blueprint, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 import jwt
+import datetime
 from db import db
 
 #import modules.v1.modelos.usuario
 from modules.v1.modelos.usuario import Usuario
 
+SECRET = 'gabriel'
 
 # Creamos el Blueprint para el modulo de autenticacion
 auth_v1_bp = Blueprint('auth_v1_bp', __name__)
 
 # El endpoint para hacer login, esto genera el token si se autentica bien.
-@auth_v1_bp.route('/login', methods=['GET'])
+@auth_v1_bp.route('/login', methods=['POST'])
 def login():
     # Obtenemos las credenciales de acceso que nos envia el usuario.
-    #credenciales = request.get_json()
-    #if credenciales is None:
-    #    return jsonify({'mensaje': 'No hemos recibido las credenciales'}), 401, {'Content-type' : 'application/json'}
+    credenciales = request.get_json()
+    if credenciales is None:
+        return jsonify({'msg': 'No hemos recibido las credenciales'}), 401, {'Content-type' : 'application/json'}
+    
+    # Primero checkeamos el usuario y pass
+    if credenciales.get('user') is None:
+        return jsonify({'msg': 'No hemos recibido el user'}), 401, {'Content-type' : 'application/json'}
+    if credenciales.get('password') is None:
+        return jsonify({'msg': 'No hemos recibido el password'}), 401, {'Content-type' : 'application/json'}
+    
+    #usuario = Usuario.query().filter(Usuario.username == credenciales['user']).filter(Usuario.password == credenciales['password']).first()
+    usuario = db.session.query(Usuario).filter(Usuario.username == credenciales['user']).filter(Usuario.password == credenciales['password']).first()
+    if usuario is None:
+        return jsonify({'msg': 'Login fallado'}), 404, {'Content-type' : 'application/json'}
 
-    return jsonify({'mensaje': 'OK'}), 200, {'Content-type' : 'application/json'}
+    # Generamos el token si lo hemos encotnrado
+    payload = {
+        'sub' : credenciales['user'],
+        'iat' : datetime.datetime.utcnow(),
+        'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)
+    }
+    token = jwt.encode(payload = payload, key = SECRET)
+    #return jsonify({'mensaje': 'OK'}), 200, {'Content-type' : 'application/json'}
+    return jsonify({'token' : token}), 200, {'Content-type' : 'application/json'}
 
 @auth_v1_bp.route('/create_user', methods=['GET'])
 def create_user():
@@ -33,8 +54,7 @@ def create_user():
     user = Usuario(username= 'a', password = 'b', rol = 'c')
     db.session.add(user)
     db.session.commit()
-    return jsonify({'mensaje': 'OK'}), 200, {'Content-type' : 'application/json'}
-
+    return jsonify({'msg': 'OK'}), 200, {'Content-type' : 'application/json'}
 
 
 @auth_v1_bp.route('/show_all', methods = ['GET'])
@@ -45,6 +65,15 @@ def show_all():
     usuarios = []
     for user in results:
        usuarios.append(user.to_dict())
-    return jsonify({'mensaje': 'OK', 'payload' : usuarios}), 200, {'Content-type' : 'application/json'}
+    return jsonify({'msg': 'OK', 'payload' : usuarios}), 200, {'Content-type' : 'application/json'}
+
+@auth_v1_bp.route('/show/<int:id>', methods = ['GET'])
+def show(id):
+    # Nos muestra los datos de un único usuario.
+    return jsonify({'msg': 'OK'}), 200, {'Content-type' : 'application/json'}
 
 
+@auth_v1_bp.route('/check', methods=['POST'])
+def check():
+    # Validamos el token jwt.
+    return jsonify({'msg': 'OK'}), 200, {'Content-type' : 'application/json'}
