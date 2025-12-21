@@ -10,30 +10,24 @@ from flask_sqlalchemy import SQLAlchemy
 import jwt
 import datetime
 from db import db
-import os
+from env_manager import *
 
 #import modules.v1.modelos.usuario
 from modules.v1.modelos.usuario import Usuario
 
-
-# Cargo las variables de entorno.
-#load_dotenv(override = True)
-#print(f"SECRET3: {os.getenv('SECRET')}")
-
 # Creamos el Blueprint para el modulo de autenticacion
 auth_v1_bp = Blueprint('auth_v1_bp', __name__)
 
-# Obtengo el SECRET y el tiempo de sesion de las variables de sesion. PEEEEEEEEEEERO si no las encuentro pongo algo by default.
-SECRET = os.getenv('SECRET')
-if SECRET is None:
-    SECRET = '123456789'
-SESSION_TIME = os.getenv('SESSION_TIME')
-if SESSION_TIME is None:
-    SESSION_TIME = 5
+
+#print(f"1. SECRET: {JWT_SECRET} SESSION_TIME {JWT_SESSION_TIME}")
 
 # El endpoint para hacer login, esto genera el token si se autentica bien.
-@auth_v1_bp.route('/login', methods=['POST'])
+@auth_v1_bp.route('/auth/login', methods=['POST'])
 def login():
+    # Declaramos la variables del env como globales.
+    global JWT_SECRET
+    global JWT_SESSION_TIME
+
     # Obtenemos las credenciales de acceso que nos envia el usuario.
     credenciales = request.get_json()
     if credenciales is None:
@@ -54,11 +48,16 @@ def login():
     payload = {
         'sub' : credenciales['user'],
         'iat' : datetime.datetime.utcnow(),
-        'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = SESSION_TIME)
+        'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = JWT_SESSION_TIME)
     }
-    token = jwt.encode(payload = payload, key = SECRET)
+    token = jwt.encode(payload = payload, key = JWT_SECRET)
     return jsonify({'token' : token}), 200, {'Content-type' : 'application/json'}
 
+
+
+
+
+# Endpoints para debug..................................................................................................................................
 @auth_v1_bp.route('/create_user', methods=['GET'])
 def create_user():
     # Con este método, creamos un usuario y lo metemos en la base de datos.

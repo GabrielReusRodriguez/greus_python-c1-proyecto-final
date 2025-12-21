@@ -13,7 +13,8 @@ from db import db
 from modules.v1.modelos.usuario import Usuario
 
 # Para cargar variables de entorno.
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
+from env_manager import *
 
 app = None
 
@@ -28,9 +29,6 @@ def create_app():
     # Creo la app
     app = Flask(__name__)    
 
-    # Cargo las variables de entorno.
-    load_dotenv(override = True)
-
     # Primero leo la configuración del fichero .cfg, para ello necesito saber la ruta del script python.
     path = os.path.dirname(os.path.realpath(__file__))
     cfg_path = f"config.cfg"
@@ -44,7 +42,8 @@ def create_app():
     
     # Registro los blueprints, podría hacerlo con cualquier version
     #app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/v1')
-    app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/')
+    #app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/')
+    app.register_blueprint(auth_v1_bp, url_prefix= '/')
     
     #Inicializo el SQLAlchemy
     db.init_app(app)

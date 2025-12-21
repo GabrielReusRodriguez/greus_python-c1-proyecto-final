@@ -1,0 +1,5 @@
+# variables entorno del microservicio de autenticacion.
+
+# Token JWT
+JWT_SECRET=
+JWT_SESSION_TIME=

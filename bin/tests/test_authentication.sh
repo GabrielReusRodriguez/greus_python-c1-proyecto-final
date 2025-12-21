@@ -3,8 +3,8 @@
 echo -e "\tTesteando el microsevicio de Autenticacion"
 
 echo -e "\t\t Login user incorrecto **********************"
-curl --json '{"user": "gabriel2" , "password" : "pwd"}' http://localhost:2203/autenticacion/login
+curl --json '{"user": "gabriel2" , "password" : "pwd"}' http://localhost:2203/auth/login
 echo -e "\t\t Login pwd incorrecto **********************"
-curl --json '{"user": "gabriel" , "password" : "123"}' http://localhost:2203/autenticacion/login
+curl --json '{"user": "gabriel" , "password" : "123"}' http://localhost:2203/auth/login
 echo -e "\t\t Login Correcto **********************"
-curl --json '{"user": "gabriel" , "password" : "pwd"}' http://localhost:2203/autenticacion/login
+curl --json '{"user": "gabriel" , "password" : "pwd"}' http://localhost:2203/auth/login
