@@ -10,14 +10,26 @@ from flask_sqlalchemy import SQLAlchemy
 import jwt
 import datetime
 from db import db
+import os
 
 #import modules.v1.modelos.usuario
 from modules.v1.modelos.usuario import Usuario
 
-SECRET = 'gabriel'
+
+# Cargo las variables de entorno.
+#load_dotenv(override = True)
+#print(f"SECRET3: {os.getenv('SECRET')}")
 
 # Creamos el Blueprint para el modulo de autenticacion
 auth_v1_bp = Blueprint('auth_v1_bp', __name__)
+
+# Obtengo el SECRET y el tiempo de sesion de las variables de sesion. PEEEEEEEEEEERO si no las encuentro pongo algo by default.
+SECRET = os.getenv('SECRET')
+if SECRET is None:
+    SECRET = '123456789'
+SESSION_TIME = os.getenv('SESSION_TIME')
+if SESSION_TIME is None:
+    SESSION_TIME = 5
 
 # El endpoint para hacer login, esto genera el token si se autentica bien.
 @auth_v1_bp.route('/login', methods=['POST'])

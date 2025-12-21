@@ -12,8 +12,11 @@ from db import db
 #import modules.v1.modelos.usuario
 from modules.v1.modelos.usuario import Usuario
 
-#db = None
+# Para cargar variables de entorno.
+from dotenv import load_dotenv
+
 app = None
+
 
 # Creo la app y registro los blueprints.
 def create_app():
@@ -24,6 +27,9 @@ def create_app():
     
     # Creo la app
     app = Flask(__name__)    
+
+    # Cargo las variables de entorno.
+    load_dotenv(override = True)
 
     # Primero leo la configuración del fichero .cfg, para ello necesito saber la ruta del script python.
     path = os.path.dirname(os.path.realpath(__file__))
@@ -39,17 +45,16 @@ def create_app():
     # Registro los blueprints, podría hacerlo con cualquier version
     #app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/v1')
     app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/')
-
-    db.init_app(app)
+    
     #Inicializo el SQLAlchemy
+    db.init_app(app)
+
     # Creo e Inicializo las tablas
     with app.app_context():
         db.create_all()
-    #    requests.post(url=f"http://localhost:")    
-    #    # Agrego un usuario admin by default.
+        # Agrego un usuario admin by default.
         user = Usuario(username = 'gabriel', password = 'pwd', rol = 'admin')
         db.session.add(user)
         db.session.commit()
-
-    # Creo el usuario admin
+    
     return app

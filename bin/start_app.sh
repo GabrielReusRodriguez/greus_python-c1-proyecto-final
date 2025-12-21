@@ -46,6 +46,8 @@ cd "${MICROSERVICE_FOLDER}"
 cp ${MICROSERVICE_FOLDER}/docker/* "${DEPLOY_FOLDER}"
 # Copio la config.
 cp "${MICROSERVICE_FOLDER}/config.cfg" "${DEPLOY_FOLDER}"
+# Copio el .env file
+cp "${MICROSERVICE_FOLDER}/.env" "${DEPLOY_FOLDER}"
 # Copio los ficheros pyhton (run.py y app.py)
 cp ${MICROSERVICE_FOLDER}/*.py "${DEPLOY_FOLDER}"
 # Copio la carpeta con los blueprints y la lógica del microservicio.
