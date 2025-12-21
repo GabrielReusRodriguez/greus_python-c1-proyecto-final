@@ -50,14 +50,13 @@ def login():
     if usuario is None:
         return jsonify({'msg': 'Login fallado'}), 404, {'Content-type' : 'application/json'}
 
-    # Generamos el token si lo hemos encotnrado
+    # Generamos el token si hemos encotnrado el usuario y password
     payload = {
         'sub' : credenciales['user'],
         'iat' : datetime.datetime.utcnow(),
-        'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)
+        'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = SESSION_TIME)
     }
     token = jwt.encode(payload = payload, key = SECRET)
-    #return jsonify({'mensaje': 'OK'}), 200, {'Content-type' : 'application/json'}
     return jsonify({'token' : token}), 200, {'Content-type' : 'application/json'}
 
 @auth_v1_bp.route('/create_user', methods=['GET'])
