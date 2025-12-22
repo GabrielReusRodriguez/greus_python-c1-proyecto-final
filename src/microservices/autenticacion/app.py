@@ -43,7 +43,7 @@ def create_app():
     # Registro los blueprints, podría hacerlo con cualquier version
     #app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/v1')
     #app.register_blueprint(auth_v1_bp, url_prefix= '/autenticacion/')
-    app.register_blueprint(auth_v1_bp, url_prefix= '/')
+    app.register_blueprint(auth_v1_bp, url_prefix= '/auth')
     
     #Inicializo el SQLAlchemy
     db.init_app(app)

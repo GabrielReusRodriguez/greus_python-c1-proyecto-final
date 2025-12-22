@@ -1,6 +1,6 @@
 #!/bin/env bash
 
-echo -e "\tTesteando el microsevicio de Autenticacion"
+echo -e "\tTesteando el microsevicio de login Autenticacion"
 
 echo -e "\t\t Login user incorrecto **********************"
 curl --json '{"user": "gabriel2" , "password" : "pwd"}' http://localhost:2203/auth/login
