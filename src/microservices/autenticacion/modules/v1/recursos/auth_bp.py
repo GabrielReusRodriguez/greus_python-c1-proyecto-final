@@ -21,7 +21,7 @@ from modules.v1.modelos.usuario import Usuario
 auth_v1_bp = Blueprint('auth_v1_bp', __name__)
 
 
-#Defino el decorador require_rol para checkear los roles cuando llamamos a la funcion
+#Defino el decorador con parámetro require_rol para checkear los roles cuando llamamos a la funcion
 def require_rol(rol_requerido):
     def decorador_interno(f):
         @wraps(f)
@@ -39,14 +39,14 @@ def require_rol(rol_requerido):
                 # Busco el usuario para ver si existe y recupero su rol.
                 user = db.session.query(Usuario).filter(Usuario.username == usuario).first()
                 if user is None:
-                    return jsonify({'msg' : 'JWT token inválido'}), 403, {'Content-type' : 'application/json'}
+                    return jsonify({'msg' : 'JWT Token inválido'}), 403, {'Content-type' : 'application/json'}
                  # 2. Verificación del permiso
                 rol_del_usuario = user.rol
                 if rol_del_usuario != rol_requerido:
                     return jsonify({'msg': 'Permiso denegado'}), 403, {'Content-type' : 'application/json'}
                 return f(*args, **kwargs)
             except (jwt.ExpiredSignatureError, jwt.InvalidTokenError,jwt.InvalidSignatureError):
-                return jsonify({'msg': 'Token invalido'}), 401, {'Content-type' : 'application/json'}
+                return jsonify({'msg': 'JWT Token invalido'}), 401, {'Content-type' : 'application/json'}
         return wrapper
     return decorador_interno
 
@@ -88,6 +88,7 @@ def login():
 @auth_v1_bp.route('/check', methods=['GET'])
 def check():
     # Checkea que el token JWT es valido. He decidido hacerlo con GET ya que le pasaré el token en el header Authoritation y devolveré un json en caso OK. con el rol.
+    # Podria hacerlo con el decorator require_rol pero entonces, una vez pasado el decorator debería volver a hacer una select del user para devolver el rol.
     global JWT_SECRET
 
     # Obtengo el token JWT a validar
