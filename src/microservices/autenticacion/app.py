@@ -25,7 +25,9 @@ def create_app():
     # Le indico a la función que la variable db y app es global.
 #    global db 
     global app
-    
+    global APP_ROOT_USERNAME
+    global APP_ROOT_PASSWORD
+
     # Creo la app
     app = Flask(__name__)    
 
@@ -52,7 +54,7 @@ def create_app():
     with app.app_context():
         db.create_all()
         # Agrego un usuario admin by default.
-        user = Usuario(username = 'gabriel', password = 'pwd', rol = 'admin')
+        user = Usuario(username = APP_ROOT_USERNAME, password = APP_ROOT_PASSWORD, rol = 'admin')
         db.session.add(user)
         db.session.commit()
     

@@ -78,19 +78,39 @@ def check():
             return jsonify({'msg' : 'JWT token inválido'}), 403, {'Content-type' : 'application/json'}
         # Hemos encontrado el usuario, devuelvo el rol correspondiente.
         return jsonify({'msg' : 'OK', 'rol' : user.rol}), 200, {'Content-type' : 'application/json'}
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError,jwt.InvalidSignatureError):
         return jsonify({'msg': 'Token invalido'}), 401, {'Content-type' : 'application/json'}
+
+
+@auth_v1_bp.route('/create_user', methods=['POST'])
+def create_user():
+    # Con este método, creamos un usuario y lo metemos en la base de datos.
+    payload = request.get_json()
+    # Check de argumetnos.
+    if payload is None or payload.get('username') is None or payload.get('password') is None or payload.get('rol') is None:
+        return jsonify({'msg' : 'No hemos recibido los datos necesarios del usuario'}), 401, {'Content-type' : 'application/json'}
+    # Check del username
+    if len(payload['username']) < 4:
+        return jsonify({'msg': 'El username es demasiado corto'}), 401, {'Content-type' : 'application/json'}
+    if db.session.query(Usuario).filter(Usuario.username == payload['username']).first() is not None:
+        return jsonify({'msg': 'El username ya está utilizado'}), 401, {'Content-type' : 'application/json'}
+    # Check del password
+    if len(payload['password']) < 4:
+        return jsonify({'msg': 'El password es demasiado corto'}), 401, {'Content-type' : 'application/json'}
+    # Check del rol => NO se puede crear otro admin.
+    if payload['rol'] not in ('medico', 'secretario', 'paciente'):
+        return jsonify({'msg': 'El rol no es correcto'}), 401, {'Content-type' : 'application/json'}
+    # Creamos la instancia del usuario
+    user = Usuario(username= payload['username'], password = payload['password'], rol = payload['rol'])
+    # agregamos la instancia a la BBDD
+    db.session.add(user)
+    # Hacemos commit
+    db.session.commit()
+    return jsonify(user.to_dict()), 200, {'Content-type' : 'application/json'}
 
 
 
 # Endpoints para debug..................................................................................................................................
-@auth_v1_bp.route('/create_user', methods=['GET'])
-def create_user():
-    # Con este método, creamos un usuario y lo metemos en la base de datos.
-    user = Usuario(username= 'a', password = 'b', rol = 'c')
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({'msg': 'OK'}), 200, {'Content-type' : 'application/json'}
 
 
 @auth_v1_bp.route('/show_all', methods = ['GET'])
