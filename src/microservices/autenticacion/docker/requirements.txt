@@ -2,4 +2,3 @@ Flask
 flask-sqlalchemy
 PyJWT
 requests
-python-dotenv

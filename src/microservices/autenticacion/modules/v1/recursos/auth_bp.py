@@ -6,7 +6,6 @@ Script del microservicio responsable de crear los tokens JWT.
 """
 
 from flask import Blueprint, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
 import jwt
 import datetime
 from functools import wraps

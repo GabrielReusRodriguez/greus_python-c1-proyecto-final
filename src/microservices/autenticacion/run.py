@@ -2,9 +2,6 @@ from app import create_app
 import os
 import configparser
 
-from dotenv import load_dotenv
-
-
 # Creamos la instancia de la aplicacion ( esto llamará a la función encargada de crear la app flask y agregar las rutas)
 app = create_app()
 

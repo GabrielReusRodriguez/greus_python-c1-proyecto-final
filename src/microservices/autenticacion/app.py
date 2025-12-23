@@ -4,16 +4,13 @@
 import os
 import configparser
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 
 from modules.v1.recursos.auth_bp import auth_v1_bp
-from db import db
-
-#import modules.v1.modelos.usuario
 from modules.v1.modelos.usuario import Usuario
 
+from db import db
+
 # Para cargar variables de entorno.
-#from dotenv import load_dotenv
 from env_manager import *
 
 app = None

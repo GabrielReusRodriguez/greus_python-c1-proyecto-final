@@ -2,7 +2,6 @@
 Este script modela la entidad usuario. Es una clase que ejerce de ORM y abstrae la gestión de los datos con la BBDD.
 Usaremos el modelo declarativo de SQLAlchemy para usar el ORM.
 """
-from flask_sqlalchemy import SQLAlchemy
 from db import db
 
 class Usuario(db.Model):
