@@ -87,15 +87,14 @@ def login():
 @auth_v1_bp.route('/check', methods=['GET'])
 def check():
     # Checkea que el token JWT es valido. He decidido hacerlo con GET ya que le pasaré el token en el header Authoritation y devolveré un json en caso OK. con el rol.
-    # Podria hacerlo con el decorator require_rol pero entonces, una vez pasado el decorator debería volver a hacer una select del user para devolver el rol.
     global JWT_SECRET
 
+    # Obtengo el rol que quiero comprobar. de los parámetros de query.
+    rol = request.args.get('rol')
+    if rol is None:
+        return jsonify({'msg': 'No hemos el rol a comprobar'}), 401, {'Content-type' : 'application/json'}        
+
     # Obtengo el token JWT a validar
-    """
-    params = request.get_json()
-    if params is None or params.get('token') is None:
-        return jsonify({'msg': 'No hemos recibido el token JWT'}), 401, {'Content-type' : 'application/json'}
-    """
     auth_header = request.headers.get('Authorization')
     if not auth_header:
         return jsonify({'msg': 'No hemos recibido el jwt'}), 401, {'Content-type' : 'application/json'}
@@ -108,8 +107,12 @@ def check():
         user = db.session.query(Usuario).filter(Usuario.username == usuario).first()
         if user is None:
             return jsonify({'msg' : 'JWT token inválido'}), 403, {'Content-type' : 'application/json'}
-        # Hemos encontrado el usuario, devuelvo el rol correspondiente.
-        return jsonify({'msg' : 'OK', 'rol' : user.rol}), 200, {'Content-type' : 'application/json'}
+        if user.rol == rol:
+            # Hemos encontrado el usuario,  y tiene el rol adecuado.
+            return jsonify({'msg' : 'OK'}), 200, {'Content-type' : 'application/json'}
+        else:
+            # Tenemos user pero no es del rol que nos piden.
+            return jsonify({'msg' : 'No autorizado.'}), 403, {'Content-type' : 'application/json'}
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError,jwt.InvalidSignatureError):
         return jsonify({'msg': 'Token invalido'}), 401, {'Content-type' : 'application/json'}
 
