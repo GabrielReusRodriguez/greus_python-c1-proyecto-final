@@ -134,7 +134,7 @@ def create_user():
     if len(payload['password']) < 4:
         return jsonify({'msg': 'El password es demasiado corto'}), 401, {'Content-type' : 'application/json'}
     # Check del rol => NO se puede crear otro admin.
-    if payload['rol'] not in ('medico', 'secretario', 'paciente'):
+    if payload['rol'] not in ('medico', 'secretario', 'paciente', 'admin'):
         return jsonify({'msg': 'El rol no es correcto'}), 401, {'Content-type' : 'application/json'}
     # Creamos la instancia del usuario
     user = Usuario(username= payload['username'], password = payload['password'], rol = payload['rol'])
