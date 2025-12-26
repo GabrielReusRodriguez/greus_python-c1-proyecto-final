@@ -2,4 +2,9 @@
 
 # -d es para que se ejecute en background , dettached.
 # --env-file .env es para especificarle el fichero de variables de environmnet a docker.
-docker run -p 2204:2204 uoc-admin
+# --network es para indicarle a que red de docker pertenece
+# --ip asigna la ip que queremos.
+
+#docker run --rm --network odontocare-network --ip 172.16.0.2 -p 2204:2204  uoc-admin 
+#docker run --rm --network host  -p 2204:2204  uoc-admin
+docker run --rm --network host  uoc-admin 

@@ -7,6 +7,7 @@ Script del microservicio responsable de crear  y gestionar  cenrtos, pacientes y
 
 from flask import Blueprint, jsonify, request
 import datetime
+import requests
 from functools import wraps
 
 from db import db
@@ -17,6 +18,7 @@ from modules.v1.modelos.doctor import Doctor
 from modules.v1.modelos.centro import CentroMedico
 
 
+AUTH_MICROSERVICE_URL = 'http://localhost:2203/auth/'
 
 # Creamos el Blueprint para el modulo de autenticacion
 admin_v1_bp = Blueprint('admin_v1_bp', __name__)
@@ -27,7 +29,17 @@ def require_rol(rol_requerido):
     def decorador_interno(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            pass
+            # Para comprobarlo, llamaremos al endpoint de authentication para checkear el rol.
+            # Obtengo el token JWT a validar
+            auth_header = request.headers.get('Authorization')
+            if not auth_header:
+                return jsonify({'msg': 'No hemos recibido el jwt'}), 403, {'Content-type' : 'application/json'}
+            # Hago un split del contenido de authentication y pillo la segunda palñabra ya que es Authorization: Bearer <token>
+            token = auth_header.split(" ")[1]
+            resp = requests.get(url = AUTH_MICROSERVICE_URL + "check", params= {'rol' : rol_requerido}, headers= {'Authorization' : f"Bearer {token}"})
+            if resp.status_code != 200:
+                return jsonify({'msg': 'Acceso no autorizado'}), 403, {'Content-type' : 'application/json'}
+            return f(*args, **kwargs)
             """
             global JWT_SECRET
             # 1. Validación del token
@@ -59,8 +71,9 @@ def require_rol(rol_requerido):
 
 # El endpoint para crea un usuario con rol admin o secretaria.
 @admin_v1_bp.route('/usuario', methods=['POST'])
+@require_rol('admin')
 def create_usuario():
-    pass
+    return jsonify({'msg' : 'OK'}), 200, {'Content-type' : 'application/json'}
     """
     # Declaramos la variables del env como globales.
     global JWT_SECRET
