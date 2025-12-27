@@ -7,14 +7,18 @@ Script del microservicio responsable de crear los tokens JWT.
 
 from flask import Blueprint, jsonify, request
 import jwt
+import os
 import datetime
 from functools import wraps
 
 from db import db
-from env_manager import *
+#from env_manager import *
 
 #import modules.v1.modelos.usuario
 from modules.v1.modelos.usuario import Usuario
+
+JWT_SECRET = os.getenv('JWT_SECRET')
+JWT_SESSION_TIME = int(os.getenv('JWT_SESSION_TIME'))
 
 # Creamos el Blueprint para el modulo de autenticacion
 auth_v1_bp = Blueprint('auth_v1_bp', __name__)
@@ -56,8 +60,8 @@ def require_rol(rol_requerido):
 @auth_v1_bp.route('/login', methods=['POST'])
 def login():
     # Declaramos la variables del env como globales.
-    global JWT_SECRET
-    global JWT_SESSION_TIME
+    #global JWT_SECRET
+    #global JWT_SESSION_TIME
 
     # Obtenemos las credenciales de acceso que nos envia el usuario.
     credenciales = request.get_json()

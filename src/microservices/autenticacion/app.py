@@ -2,16 +2,12 @@
 # from __future__ import annotations
 
 import os
-import configparser
 from flask import Flask
 
 from modules.v1.recursos.auth_bp import auth_v1_bp
 from modules.v1.modelos.usuario import Usuario
 
 from db import db
-
-# Para cargar variables de entorno.
-from env_manager import *
 
 app = None
 
@@ -20,23 +16,15 @@ app = None
 def create_app():
 
     # Le indico a la función que la variable db y app es global.
-#    global db 
     global app
-    global APP_ROOT_USERNAME
-    global APP_ROOT_PASSWORD
-
+    global db
+    
     # Creo la app
     app = Flask(__name__)    
 
-    # Primero leo la configuración del fichero .cfg, para ello necesito saber la ruta del script python.
-    path = os.path.dirname(os.path.realpath(__file__))
-    cfg_path = f"config.cfg"
-    # Mando al parser leer la configuracion
-    config = configparser.ConfigParser()
-    config.read([cfg_path])
-
     # Creo el acceso a la BBDD SQLite.
-    app.config['SQLALCHEMY_DATABASE_URI'] = config['SQLALchemy']['url']
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_URL')
+    #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Registro los blueprints, podría hacerlo con cualquier version
@@ -50,6 +38,10 @@ def create_app():
     # Creo e Inicializo las tablas
     with app.app_context():
         db.create_all()
+        # Cargo los datos del primer admin de las variables de entorno.
+        APP_ROOT_USERNAME = os.getenv('APP_ROOT_USERNAME')
+        APP_ROOT_PASSWORD = os.getenv('APP_ROOT_PASSWORD')
+
         # Agrego un usuario admin by default.
         user = Usuario(username = APP_ROOT_USERNAME, password = APP_ROOT_PASSWORD, rol = 'admin')
         db.session.add(user)

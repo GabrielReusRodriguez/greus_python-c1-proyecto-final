@@ -1,0 +1,4 @@
+# variables entorno del microservicio de admin
+
+# SQL_Alchemy
+SQL_ALCHEMY_URL=

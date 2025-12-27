@@ -5,4 +5,5 @@
 # --ip asigna la ip que queremos al contenedor.
 
 #docker run  --rm --env-file ./.env -d --network odontocare-network --ip 172.16.0.1 -p 2203:2203  uoc-autenticacion
-docker run  --rm --env-file ./.env -d --network host  uoc-autenticacion 
+#docker run  --rm --env-file ./.env --env-file ./.env-urls -d --network host  uoc-autenticacion 
+docker run  --rm --env-file ./.env --env-file ./.env-urls -d --network host  uoc-autenticacion 
