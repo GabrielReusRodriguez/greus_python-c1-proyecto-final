@@ -100,8 +100,8 @@ def check():
 
     # Obtengo el token JWT a validar
     auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        return jsonify({'msg': 'No hemos recibido el jwt'}), 401, {'Content-type' : 'application/json'}
+    if auth_header is None:
+        return jsonify({'msg': 'No hemos recibido el JWT'}), 401, {'Content-type' : 'application/json'}
     # Hago un split del contenido de authentication y pillo la segunda palñabra ya que es Authorization: Bearer <token>
     token = auth_header.split(" ")[1]
     try:
