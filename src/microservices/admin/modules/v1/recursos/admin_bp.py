@@ -67,75 +67,22 @@ def require_rol(rol_requerido):
     return decorador_interno
 
 
-#print(f"1. SECRET: {JWT_SECRET} SESSION_TIME {JWT_SESSION_TIME}")
-
 # El endpoint para crea un usuario con rol admin o secretaria.
 @admin_v1_bp.route('/usuario', methods=['POST'])
 @require_rol('admin')
 def create_usuario():
-    return jsonify({'msg' : 'OK'}), 200, {'Content-type' : 'application/json'}
-    """
-    # Declaramos la variables del env como globales.
-    global JWT_SECRET
-    global JWT_SESSION_TIME
-
-    # Obtenemos las credenciales de acceso que nos envia el usuario.
-    credenciales = request.get_json()
-    if credenciales is None:
-        return jsonify({'msg': 'No hemos recibido las credenciales'}), 401, {'Content-type' : 'application/json'}
-    
-    # Primero checkeamos el usuario y pass
-    if credenciales.get('user') is None:
-        return jsonify({'msg': 'No hemos recibido el user'}), 401, {'Content-type' : 'application/json'}
-    if credenciales.get('password') is None:
-        return jsonify({'msg': 'No hemos recibido el password'}), 401, {'Content-type' : 'application/json'}
-    
-    #usuario = Usuario.query().filter(Usuario.username == credenciales['user']).filter(Usuario.password == credenciales['password']).first()
-    usuario = db.session.query(Usuario).filter(Usuario.username == credenciales['user']).filter(Usuario.password == credenciales['password']).first()
-    if usuario is None:
-        return jsonify({'msg': 'Login fallado'}), 404, {'Content-type' : 'application/json'}
-
-    # Generamos el token si hemos encotnrado el usuario y password
-    payload = {
-        'sub' : credenciales['user'],
-        'iat' : datetime.datetime.utcnow(),
-        'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = JWT_SESSION_TIME)
-    }
-    token = jwt.encode(payload = payload, key = JWT_SECRET)
-    return jsonify({'token' : token}), 200, {'Content-type' : 'application/json'}
-
-@auth_v1_bp.route('/check', methods=['GET'])
-def check():
-    # Checkea que el token JWT es valido. He decidido hacerlo con GET ya que le pasaré el token en el header Authoritation y devolveré un json en caso OK. con el rol.
-    global JWT_SECRET
-
-    # Obtengo el rol que quiero comprobar. de los parámetros de query.
-    rol = request.args.get('rol')
-    if rol is None:
-        return jsonify({'msg': 'No hemos el rol a comprobar'}), 401, {'Content-type' : 'application/json'}        
-
-    # Obtengo el token JWT a validar
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        return jsonify({'msg': 'No hemos recibido el jwt'}), 401, {'Content-type' : 'application/json'}
-    # Hago un split del contenido de authentication y pillo la segunda palñabra ya que es Authorization: Bearer <token>
-    token = auth_header.split(" ")[1]
-    try:
-        payload = jwt.decode(jwt = token, key = JWT_SECRET, verify= True, algorithms =['HS256'])
-        usuario = payload['sub']
-        # Busco el usuario para ver si existe y recupero su rol.
-        user = db.session.query(Usuario).filter(Usuario.username == usuario).first()
-        if user is None:
-            return jsonify({'msg' : 'JWT token inválido'}), 403, {'Content-type' : 'application/json'}
-        if user.rol == rol:
-            # Hemos encontrado el usuario,  y tiene el rol adecuado.
-            return jsonify({'msg' : 'OK'}), 200, {'Content-type' : 'application/json'}
-        else:
-            # Tenemos user pero no es del rol que nos piden.
-            return jsonify({'msg' : 'No autorizado.'}), 403, {'Content-type' : 'application/json'}
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError,jwt.InvalidSignatureError):
-        return jsonify({'msg': 'Token invalido'}), 401, {'Content-type' : 'application/json'}
-    """
+    # Obtenemos los parámetros json.
+    data = request.get_json()
+    # Check... solo checqueo el rol ya que el resto se comprobará en el microservicio de autenticacion.
+    if data is None:
+        return jsonify({'msg' : 'No hemos recibodo parámetros'}), 401, {'Content-type' : 'application/json'}
+    if data.get('rol') is None or data.get('rol') not in ('admin', 'secretario'):
+        return jsonify({'msg' : 'No hemos recibido el rol'}), 401, {'Content-type' : 'application/json'}
+    response = requests.post(url=AUTH_MICROSERVICE_URL + "create_user", json = data)
+    if response.status_code != 200:
+        return response.json, response.status_code, {'Content-type' : 'application/json'}
+    # Si ha llegado hasta aqui, significa que el usuario se ha creado bien por lo que seguimos creando el tipo de usuario = medico, admin...
+    return response.json, 200, {'Content-type' : 'application/json'}
 
 @admin_v1_bp.route('/usuarios?<int:pagina>', methods=['GET'])
 def consulta_usuarios(pagina:int):
@@ -149,31 +96,6 @@ def consulta_usuario(id:int):
 @require_rol('admin')
 def create_doctor():
     pass
-    """
-    # Con este método, creamos un usuario y lo metemos en la base de datos.
-    payload = request.get_json()
-    # Check de argumetnos.
-    if payload is None or payload.get('username') is None or payload.get('password') is None or payload.get('rol') is None:
-        return jsonify({'msg' : 'No hemos recibido los datos necesarios del usuario'}), 401, {'Content-type' : 'application/json'}
-    # Check del username
-    if len(payload['username']) < 4:
-        return jsonify({'msg': 'El username es demasiado corto'}), 401, {'Content-type' : 'application/json'}
-    if db.session.query(Usuario).filter(Usuario.username == payload['username']).first() is not None:
-        return jsonify({'msg': 'El username ya está utilizado'}), 401, {'Content-type' : 'application/json'}
-    # Check del password
-    if len(payload['password']) < 4:
-        return jsonify({'msg': 'El password es demasiado corto'}), 401, {'Content-type' : 'application/json'}
-    # Check del rol => NO se puede crear otro admin.
-    if payload['rol'] not in ('medico', 'secretario', 'paciente'):
-        return jsonify({'msg': 'El rol no es correcto'}), 401, {'Content-type' : 'application/json'}
-    # Creamos la instancia del usuario
-    user = Usuario(username= payload['username'], password = payload['password'], rol = payload['rol'])
-    # agregamos la instancia a la BBDD
-    db.session.add(user)
-    # Hacemos commit
-    db.session.commit()
-    return jsonify(user.to_dict()), 200, {'Content-type' : 'application/json'}
-    """
 
 @admin_v1_bp.route('/pacientes', methods=['POST'])
 @require_rol('admin')
