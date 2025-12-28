@@ -101,7 +101,7 @@ def consulta_usuarios(pagina:int):
             break
     return jsonify({'msg' : 'OK', 'payload' : users}), 200, {'Content-type' : 'application/json'}
 
-@admin_v1_bp.route('/usuario/<int:id>', methods=['GET'])
+@admin_v1_bp.route('/usuarios/<int:id>', methods=['GET'])
 @require_rol(['admin'])
 def consulta_usuario(id:int):
     # Este endpoint consulta el usuario de tipo secretario y admin que le pasamos por parámetro 
@@ -141,8 +141,20 @@ def create_doctor():
     # Si ha llegado hasta aqui, significa que el usuario se ha creado bien por lo que seguimos creando el tipo de usuario = medico, admin...
     return jsonify({'msg' : 'OK', 'payload' : dr.to_dict()}), 200, {'Content-type' : 'application/json'}
 
+@admin_v1_bp.route('/doctores', methods=['GET'])
+@require_rol(['admin'])
+def consulta_doctores():
+    pass
+
+@admin_v1_bp.route('/doctores/<int:id>', methods=['GET'])
+@require_rol(['admin'])
+def consulta_doctores(id : int):
+    pass
+
+
+
 @admin_v1_bp.route('/pacientes', methods=['POST'])
-@require_rol('admin')
+@require_rol(['admin'])
 def create_paciente():
     pass
 
@@ -152,13 +164,13 @@ def consulta_pacientes(pagina : int):
     # Recuerda paginacion!!!
     pass
 
-@admin_v1_bp.route('/paciente?<int:id>', methods=['GET'])
+@admin_v1_bp.route('/pacientes/<int:id>', methods=['GET'])
 def consulta_paciente(id : int):
     pass
 
 
 @admin_v1_bp.route('/centros',methods=['POST'])
-@require_rol('admin')
+@require_rol(['admin'])
 def create_centro():
     pass
 
@@ -168,7 +180,7 @@ def consulta_centros(pagina : int):
     # Recuerda paginacion!!!
     pass
 
-@admin_v1_bp.route('/centro?<int:id>', methods=['GET'])
+@admin_v1_bp.route('/centro/<int:id>', methods=['GET'])
 def consulta_centro(id : int):
     pass
 
