@@ -25,7 +25,7 @@ auth_v1_bp = Blueprint('auth_v1_bp', __name__)
 
 
 #Defino el decorador con parámetro require_rol para checkear los roles cuando llamamos a la funcion
-def require_rol(rol_requerido):
+def require_rol(roles_requeridos : list):
     def decorador_interno(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -44,11 +44,12 @@ def require_rol(rol_requerido):
                 if user is None:
                     return jsonify({'msg' : 'JWT Token inválido'}), 403, {'Content-type' : 'application/json'}
                  # 2. Verificación del permiso
-                rol_del_usuario = user.rol
-                if rol_del_usuario != rol_requerido:
+                #rol_del_usuario = user.rol
+                #if rol_del_usuario != rol_requerido:
+                if user.rol not in roles_requeridos: 
                     return jsonify({'msg': 'Permiso denegado'}), 403, {'Content-type' : 'application/json'}
                 return f(*args, **kwargs)
-            except (jwt.ExpiredSignatureError, jwt.InvalidTokenError,jwt.InvalidSignatureError):
+            except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, jwt.InvalidSignatureError):
                 return jsonify({'msg': 'JWT Token invalido'}), 401, {'Content-type' : 'application/json'}
         return wrapper
     return decorador_interno
@@ -122,7 +123,7 @@ def check():
 
 
 @auth_v1_bp.route('/create_user', methods=['POST'])
-@require_rol('admin')
+@require_rol(['admin'])
 def create_user():
     # Con este método, creamos un usuario y lo metemos en la base de datos.
     payload = request.get_json()
@@ -151,76 +152,22 @@ def create_user():
     db.session.commit()
     return jsonify({'msg' : 'OK' , 'payload' : user.to_dict()}), 200, {'Content-type' : 'application/json'}
 
-
-
-# Endpoints para debug..................................................................................................................................
-
-
 @auth_v1_bp.route('/show_all', methods = ['GET'])
+@require_rol(['admin','secretario'])
 def show_all():
     # Con este metodo enseño todos los usuarios que hay
-    session = db.session
-    results = session.query(Usuario).all()
+    results = db.session.query(Usuario).all()
     usuarios = []
     for user in results:
        usuarios.append(user.to_dict())
     return jsonify({'msg': 'OK', 'payload' : usuarios}), 200, {'Content-type' : 'application/json'}
 
 @auth_v1_bp.route('/show/<int:id>', methods = ['GET'])
-def show(id):
+@require_rol(['admin','secretario','doctor'])
+def show(id: int):
+    # Obtengo el usuario con id usuario que nos pasan.
+    user = db.session.query(Usuario).filter(Usuario.id_usuario == id).first()
+    if user is None:
+        return jsonify({'msg' : 'User NOT found'}), 404, {'Content-type' : 'application/json'}
     # Nos muestra los datos de un único usuario.
-    return jsonify({'msg': 'OK'}), 200, {'Content-type' : 'application/json'}
-
-"""
-@auth_v1_bp.route('/check', methods=['POST'])
-def check():
-    # Validamos el token jwt.
-    return jsonify({'msg': 'OK'}), 200, {'Content-type' : 'application/json'}
-"""
-
-"""
-
-# Simulación de un usuario en la base de datos con roles
-usuarios_db = {
-    'admin': {'password': 'admin_pass', 'rol': 'administrador'},
-    'user': {'password': 'user_pass', 'rol': 'usuario'}
-}
-
-# Decorador personalizado para verificar el rol
-def requiere_rol(rol_requerido):
-    def decorador_interno(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            # 1. Validación del token
-            auth_header = request.headers.get('Authorization')
-            if not auth_header:
-                return jsonify({'mensaje': 'Token no proporcionado'}), 401
-            
-            token = auth_header.split(" ")[1]
-            try:
-                payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-                usuario = payload['sub']
-                
-                # 2. Verificación del permiso
-                rol_del_usuario = usuarios_db[usuario]['rol']
-                if rol_del_usuario != rol_requerido:
-                    return jsonify({'mensaje': 'Permiso denegado'}), 403
-
-            except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-                return jsonify({'mensaje': 'Token inválido'}), 401
-
-            return f(*args, **kwargs)
-        return wrapper
-    return decorador_interno
-
-@app.route('/recurso-administrador', methods=['GET'])
-@requiere_rol('administrador')
-def recurso_admin():
-    return jsonify({'mensaje': 'Acceso concedido a los administradores.'})
-
-@app.route('/recurso-usuario', methods=['GET'])
-@requiere_rol('usuario')
-def recurso_usuario():
-    return jsonify({'mensaje': 'Acceso concedido a los usuarios.'})
-
-"""
+    return jsonify({'msg': 'OK', 'payload' : user.to_dict()}), 200, {'Content-type' : 'application/json'}

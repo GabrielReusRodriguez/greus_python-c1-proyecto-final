@@ -20,6 +20,7 @@ from modules.v1.modelos.centro import CentroMedico
 
 
 AUTH_MICROSERVICE_URL = "http://" + os.getenv('AUTHENTICATION_HOST') + ":" + os.getenv('AUTHENTICATION_PORT') + "/auth/"
+ITEMS_POR_PAGINA = int(os.getenv('ITEMS_POR_PAGINA'))
 
 # Creamos el Blueprint para el modulo de autenticacion
 admin_v1_bp = Blueprint('admin_v1_bp', __name__)
@@ -54,8 +55,8 @@ def create_usuario():
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
         return jsonify({'msg': 'No hemos recibido el jwt'}), 403, {'Content-type' : 'application/json'}
-       # Hago un split del contenido de authentication y pillo la segunda palñabra ya que es Authorization: Bearer <token>
-    token = auth_header.split(" ")[1]
+    # Hago un split del contenido de authentication y pillo la segunda palñabra ya que es Authorization: Bearer <token>
+    #token = auth_header.split(" ")[1]
     # Obtenemos los parámetros json.
     data = request.get_json()
     # Check... solo checqueo el rol ya que el resto se comprobará en el microservicio de autenticacion.
@@ -63,27 +64,82 @@ def create_usuario():
         return jsonify({'msg' : 'No hemos recibodo parámetros'}), 401, {'Content-type' : 'application/json'}
     if data.get('rol') is None or data.get('rol') not in ('admin', 'secretario'):
         return jsonify({'msg' : 'No hemos recibido el rol'}), 401, {'Content-type' : 'application/json'}
-    response = requests.post(url=AUTH_MICROSERVICE_URL + "create_user", json = data, headers= {'Authorization' : f"Bearer {token}"})
+    response = requests.post(url=AUTH_MICROSERVICE_URL + "create_user", json = data, headers= {'Authorization' : auth_header})
     if response.status_code != 200:
         return response.json(), response.status_code, {'Content-type' : 'application/json'}
     # Si ha llegado hasta aqui, significa que el usuario se ha creado bien por lo que seguimos creando el tipo de usuario = medico, admin...
-    return response.json, 200, {'Content-type' : 'application/json'}
+    return response.json(), 200, {'Content-type' : 'application/json'}
 
-@admin_v1_bp.route('/usuarios?<int:pagina>', methods=['GET'])
-@require_rol(['admin', 'secretario'])
+@admin_v1_bp.route('/usuarios', methods=['GET'])
+@require_rol(['admin'])
 def consulta_usuarios(pagina:int):
+    # Nos devuelve un listado de n usuarios de rol admin y secretario
+    # Obtengo el token jwt
+    auth_header = request.headers.get('Authorization')
+    if auth_header is None:
+        return jsonify({'msg': 'No hemos recibido el jwt'}), 403, {'Content-type' : 'application/json'}
+    pagina = request.args.get('pagina')
+    if pagina is None:
+        pagina = 0 
     # Este endpoint consulta usuarios de tipo secretario y admin.
-    #requests.get(url=AUTH_MICROSERVICE_URL + "show_all")
-    pass
+    response = requests.get(url=AUTH_MICROSERVICE_URL + "show_all", headers ={'Authorization' : auth_header})
+    if response.status_code != 200:
+        return response.json(), response.status_code, {'Content-type' : 'application/json'}
+    data = response.json()
+    i = 0
+    inicio_pagina = ITEMS_POR_PAGINA * pagina
+    users = []
+    #Itero usuario por usuario buscando roles admin y secretario.
+    for user in data['payload']:
+        if user['rol'] == 'admin' or user['rol'] == 'secretario':
+            if i >= inicio_pagina:
+                # Borro el password ( por seguridad)
+                user['password'] = ''
+                users.append(user)
+            i = i + 1
+        if len(users) > ITEMS_POR_PAGINA:
+            break
+    return jsonify({'msg' : 'OK', 'payload' : users}), 200, {'Content-type' : 'application/json'}
 
-@admin_v1_bp.route('/usuario?<int:id>', methods=['GET'])
+@admin_v1_bp.route('/usuario/<int:id>', methods=['GET'])
+@require_rol(['admin'])
 def consulta_usuario(id:int):
-    pass
+    # Este endpoint consulta el usuario de tipo secretario y admin que le pasamos por parámetro 
+    # Obtengo el token jwt
+    auth_header = request.headers.get('Authorization')
+    if auth_header is None:
+        return jsonify({'msg': 'No hemos recibido el jwt'}), 403, {'Content-type' : 'application/json'}
+    response = requests.get(url = AUTH_MICROSERVICE_URL + f"show/{id}", headers={'Authorization' : header})
+    return response.json(), response.status_code, {'Content-type' : 'application/json'}
+    
 
 @admin_v1_bp.route('/doctores', methods=['POST'])
 @require_rol('admin')
 def create_doctor():
-    pass
+    # Obtengo el token jwt
+    auth_header = request.headers.get('Authorization')
+    if auth_header is None:
+        return jsonify({'msg': 'No hemos recibido el jwt'}), 403, {'Content-type' : 'application/json'}
+    # Obtenemos los parámetros json.
+    data = request.get_json()
+    # Check... solo checqueo el rol ya que el resto se comprobará en el microservicio de autenticacion.
+    if data is None:
+        return jsonify({'msg' : 'No hemos recibodo parámetros'}), 401, {'Content-type' : 'application/json'}
+    if data.get('rol') is None or data.get('rol') not in ('doctor'):
+        return jsonify({'msg' : 'No hemos recibido el rol correcto'}), 401, {'Content-type' : 'application/json'}
+    if data.get('nombre') is None:
+        return jsonify({'msg': 'No hemos recibido el nombre'}), 401, {'Content-type' : 'application/json'}
+    if data.get('especialidad') is None:
+        return jsonify({'msg': 'No hemos recibido la especialidad'}), 401, {'Content-type' : 'application/json'}
+    response = requests.post(url=AUTH_MICROSERVICE_URL + "create_user", json = data, headers= {'Authorization' : auth_header})
+    if response.status_code != 200:
+        return response.json(), response.status_code, {'Content-type' : 'application/json'}
+    # Tenemos el user creado, ahopra creamos los datos del doctor.
+    dr = Doctor(nombre= data.get('nombre'), especialidad = data.get('especialidad'), id_usuario = response.json()['payload']['id_usuario'])
+    db.session.add(dr)
+    db.session.commit()
+    # Si ha llegado hasta aqui, significa que el usuario se ha creado bien por lo que seguimos creando el tipo de usuario = medico, admin...
+    return jsonify({'msg' : 'OK', 'payload' : dr.to_dict()}), 200, {'Content-type' : 'application/json'}
 
 @admin_v1_bp.route('/pacientes', methods=['POST'])
 @require_rol('admin')
