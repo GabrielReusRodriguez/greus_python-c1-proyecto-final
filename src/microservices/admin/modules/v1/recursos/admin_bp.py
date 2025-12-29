@@ -181,7 +181,7 @@ def consulta_doctores():
 
 @admin_v1_bp.route('/doctores/<int:id>', methods=['GET'])
 @require_rol(['admin'])
-def consulta_doctores(id : int):
+def consulta_doctor(id : int):
     # Devuelvo el Doctor por id de doctor.
     dr = db.session.query(Doctor).filter(Doctor.id_doctor == id).first()
     if dr is None:
@@ -313,8 +313,6 @@ def consulta_centro(id : int):
     if centro is None:
         return jsonify({'msg': 'OK'}),404,{'Content-type' : 'application/json'}
     return jsonify({'msg' : 'OK' , 'payload' : centro.to_dict()}), 200, {'Content-type': 'application/json'}
-
-
 
 #Busqueda completa.
 
