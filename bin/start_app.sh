@@ -57,8 +57,6 @@ cp "${SCRIPT_DIR}/../src/.env" "${DEPLOY_FOLDER}/.env-urls"
 cp ${MICROSERVICE_FOLDER}/*.py "${DEPLOY_FOLDER}"
 # Copio la carpeta con los blueprints y la lógica del microservicio.
 cp -r ${MICROSERVICE_FOLDER}/modules "${DEPLOY_FOLDER}/modules"
-# Copio la carpeta de clases auxiliares.
-cp -r "${MICROSERVICE_FOLDER}/../../classes" "${DEPLOY_FOLDER}/classes"
 
 # Voy a la carpeta de deploy.
 cd "${DEPLOY_FOLDER}"
@@ -73,7 +71,7 @@ cd "${DEPLOY_FOLDER}"
 rm -rf "${DEPLOY_FOLDER}"
 mkdir "${DEPLOY_FOLDER}"
 
-# Deploy del microservicio de autenticacion.
+# Deploy del microservicio de admin.
 echo -e "\t  Admin..."
 # Me quedo con la carpeta base del microservicio y cambio a la carpeta del microservicio
 MICROSERVICE_FOLDER="${SCRIPT_DIR}/../src/microservices/admin"
@@ -90,8 +88,6 @@ cp "${SCRIPT_DIR}/../src/.env" "${DEPLOY_FOLDER}/.env-urls"
 cp ${MICROSERVICE_FOLDER}/*.py "${DEPLOY_FOLDER}"
 # Copio la carpeta con los blueprints y la lógica del microservicio.
 cp -r ${MICROSERVICE_FOLDER}/modules "${DEPLOY_FOLDER}/modules"
-# Copio la carpeta de clases auxiliares.
-cp -r "${MICROSERVICE_FOLDER}/../../classes" "${DEPLOY_FOLDER}/classes"
 
 # Voy a la carpeta de deploy.
 cd "${DEPLOY_FOLDER}"
@@ -99,6 +95,40 @@ cd "${DEPLOY_FOLDER}"
 ./build.sh
 # ejecuto el contenedor.
 ./run.sh
+
+
+
+# Deploy de microservicio de citas ****************************************************
+
+rm -rf "${DEPLOY_FOLDER}"
+mkdir "${DEPLOY_FOLDER}"
+
+# Deploy del microservicio de citas.
+echo -e "\t  Citas..."
+# Me quedo con la carpeta base del microservicio y cambio a la carpeta del microservicio
+MICROSERVICE_FOLDER="${SCRIPT_DIR}/../src/microservices/citas"
+cd "${MICROSERVICE_FOLDER}"
+#cp classes.
+# Copio los ficheros para crear y ejecutar el docker
+cp ${MICROSERVICE_FOLDER}/docker/* "${DEPLOY_FOLDER}"
+# Copio los .env file
+# EL del microservicio
+cp "${MICROSERVICE_FOLDER}/.env" "${DEPLOY_FOLDER}"
+# Y el global
+cp "${SCRIPT_DIR}/../src/.env" "${DEPLOY_FOLDER}/.env-urls"
+# Copio los ficheros pyhton (run.py y app.py)
+cp ${MICROSERVICE_FOLDER}/*.py "${DEPLOY_FOLDER}"
+# Copio la carpeta con los blueprints y la lógica del microservicio.
+cp -r ${MICROSERVICE_FOLDER}/modules "${DEPLOY_FOLDER}/modules"
+
+# Voy a la carpeta de deploy.
+cd "${DEPLOY_FOLDER}"
+# Mando construir la imagen.
+./build.sh
+# ejecuto el contenedor.
+./run.sh
+
+
 
 #Vuelvo a la carpeta inicial
 cd ${ACTUAL_PATH}

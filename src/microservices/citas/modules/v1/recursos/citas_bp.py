@@ -14,16 +14,14 @@ from functools import wraps
 from db import db
 
 #import modules.v1.modelos.usuario
-from modules.v1.modelos.paciente import Paciente
-from modules.v1.modelos.doctor import Doctor
-from modules.v1.modelos.centro import CentroMedico
-
+from modules.v1.modelos.citas import Citas
 
 AUTH_MICROSERVICE_URL = "http://" + os.getenv('AUTHENTICATION_HOST') + ":" + os.getenv('AUTHENTICATION_PORT') + "/auth/"
+ADMIN_MICROSERVICE_URL = "http://" + os.getenv('ADMIN_HOST') + ":" + os.getenv('ADMIN_PORT') + "/admin/"
 ITEMS_POR_PAGINA = int(os.getenv('ITEMS_POR_PAGINA'))
 
 # Creamos el Blueprint para el modulo de autenticacion
-admin_v1_bp = Blueprint('admin_v1_bp', __name__)
+citas_v1_bp = Blueprint('citas_v1_bp', __name__)
 
 
 #Defino el decorador con parámetro require_rol para checkear los roles cuando llamamos a la funcion
@@ -47,8 +45,30 @@ def require_rol(roles_requeridos : list):
     return decorador_interno
 
 
+@citas_v1_bp.route('/citas', methods = ['POST'])
+@require_rol(['admin'])
+def create_cita():
+    # Se usa para crear citas
+    pass
+
+
+@citas_v1_bp.route('/citas', methods = ['GET'])
+@require_rol(['admin'])
+def consulta_citas():
+    # Se usa para listas las citas
+    pass
+
+@citas_v1_bp.route('/citas/<int:id>', methods = ['PUT'])
+@require_rol(['admin'])
+def cancela_cita(id:int):
+    # Se usa para cambiar de estado la cita ( cancelarla )
+    pass
+
+# Debug.................................
+
+"""
 # El endpoint para crea un usuario con rol admin o secretaria.
-@admin_v1_bp.route('/usuario', methods=['POST'])
+@cita_v1_bp.route('/usuario', methods=['POST'])
 @require_rol(['admin'])
 def create_usuario():
     # Obtengo el token jwt
@@ -72,7 +92,7 @@ def create_usuario():
 
 @admin_v1_bp.route('/usuarios', methods=['GET'])
 @require_rol(['admin'])
-def consulta_usuarios():
+def consulta_usuarios(pagina:int):
     # Nos devuelve un listado de n usuarios de rol admin y secretario
     # Obtengo el token jwt
     auth_header = request.headers.get('Authorization')
@@ -162,23 +182,6 @@ def consulta_doctores():
         i = i + 1
     return jsonify({'msg' : 'OK', 'payload' : doctores}), 200, {'Content-type' : 'application/json'}
 
-    """
-    i = 0
-    inicio_pagina = ITEMS_POR_PAGINA * pagina
-    users = []
-    #Itero usuario por usuario buscando roles admin y secretario.
-    for user in data['payload']:
-        if user['rol'] == 'admin' or user['rol'] == 'secretario':
-            if i >= inicio_pagina:
-                # Borro el password ( por seguridad)
-                user['password'] = ''
-                users.append(user)
-            i = i + 1
-        if len(users) > ITEMS_POR_PAGINA:
-            break
-    return jsonify({'msg' : 'OK', 'payload' : users}), 200, {'Content-type' : 'application/json'}
-    """
-
 @admin_v1_bp.route('/doctores/<int:id>', methods=['GET'])
 @require_rol(['admin'])
 def consulta_doctor(id : int):
@@ -192,16 +195,7 @@ def consulta_doctor(id : int):
 @admin_v1_bp.route('/pacientes', methods=['POST'])
 @require_rol(['admin'])
 def create_paciente():
-    """
-        Paciente
-        Datos mínimos del paciente:
 
-        id_paciente (PK)
-        id_usuario (FK opcional)
-        nombre
-        teléfono
-        estado(ACTIVO/INACTIVO)
-    """
     # Obtengo el token jwt
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
@@ -261,12 +255,7 @@ def consulta_paciente(id : int):
 @admin_v1_bp.route('/centros',methods=['POST'])
 @require_rol(['admin'])
 def create_centro():
-    """
-    Centro Médico
-        id_centro (PK)
-        nombre
-        direccion
-    """
+
     # Creo un centro.
     # Obtenemos los parámetros json.
     data = request.get_json()
@@ -314,6 +303,7 @@ def consulta_centro(id : int):
         return jsonify({'msg': 'OK'}),404,{'Content-type' : 'application/json'}
     return jsonify({'msg' : 'OK' , 'payload' : centro.to_dict()}), 200, {'Content-type': 'application/json'}
 
+"""
 #Busqueda completa.
 
 # Endpoints para debug..................................................................................................................................

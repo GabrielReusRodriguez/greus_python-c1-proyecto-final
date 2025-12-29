@@ -1,0 +1,4 @@
+# variables entorno del microservicio de citas
+
+# SQL_Alchemy
+SQLALCHEMY_URL=
