@@ -19,7 +19,7 @@ class Citas(db.Model):
     __tablename__ = 'citas'
     # Las columnas
     id_cita = db.Column(db.Integer, autoincrement = True, primary_key = True)
-    fecha = db.Column(db.Date, nullable = False)
+    fecha = db.Column(db.DateTime, nullable = False)
     motivo = db.Column(db.String, nullable  = False)
     estado = db.Column(db.String, nullable = False)
     id_paciente = db.Column(db.Integer, nullable = False)

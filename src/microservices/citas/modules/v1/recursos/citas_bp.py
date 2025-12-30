@@ -16,8 +16,8 @@ from db import db
 #import modules.v1.modelos.usuario
 from modules.v1.modelos.citas import Citas
 
-AUTH_MICROSERVICE_URL = "http://" + os.getenv('AUTHENTICATION_HOST') + ":" + os.getenv('AUTHENTICATION_PORT') + "/auth/"
-ADMIN_MICROSERVICE_URL = "http://" + os.getenv('ADMIN_HOST') + ":" + os.getenv('ADMIN_PORT') + "/admin/"
+AUTH_MICROSERVICE_URL = "http://" + os.getenv('AUTHENTICATION_HOST') + ":" + os.getenv('AUTHENTICATION_PORT') + "/auth"
+ADMIN_MICROSERVICE_URL = "http://" + os.getenv('ADMIN_HOST') + ":" + os.getenv('ADMIN_PORT') + "/admin"
 ITEMS_POR_PAGINA = int(os.getenv('ITEMS_POR_PAGINA'))
 
 # Creamos el Blueprint para el modulo de autenticacion
@@ -46,23 +46,125 @@ def require_rol(roles_requeridos : list):
 
 
 @citas_v1_bp.route('/citas', methods = ['POST'])
-@require_rol(['admin'])
+@require_rol(['admin', 'paciente'])
 def create_cita():
+
+    """
+        En BBDD se guarda:
+            id_cita (PK)
+            fecha
+            motivo
+            estado
+            id_paciente (FK)
+            id_doctor (FK)
+            id_centro (FK)
+            id_usuario_registra(FK)
+    """
+    # Obtenemos  el token
+    auth_header = request.headers.get('Authorization')
     # Se usa para crear citas
+    data = request.get_json()
+    # Check que los parámetros esten bien infomrados.
+    if data is None:
+        return jsonify({'msg' : 'No hemos recibido los parámetros'}), 401, {'Content-type' : 'application/json'}
+    if data.get('id_doctor') is None:
+        return jsonify({'msg' : 'No hemos recibido el doctor'}), 401, {'Content-type' : 'application/json'}
+    if data.get('id_centro') is None:
+        return jsonify({'msg' : 'No hemos recibido el centro'}), 401, {'Content-type' : 'application/json'}
+    if data.get('id_paciente') is None:
+        return jsonify({'msg' : 'No hemos recibido el paciente'}), 401, {'Content-type' : 'application/json'}
+    if data.get('fecha') is None:
+        return jsonify({'msg' : 'No hemos recibido la fecha y hora'}), 401, {'Content-type' : 'application/json'}
+    if data.get('motivo') is None:
+        return jsonify({'msg' : 'No hemos recibido el motivo'}), 401, {'Content-type' : 'application/json'}
+    
+    """
+        Validaciones
+        El doctor existe.
+        El centro médico existe.
+        El paciente existe y está activo.
+        No se puede agendar una cita si el doctor ya tiene otra en la misma fecha y
+            hora (evitar doble reserva).
+    """
+    # Check si el doctor existe.
+    dr_response = requests.get(url = f'{ADMIN_MICROSERVICE_URL}/doctores/{data["id_doctor"]}', headers= {'Authorization' : auth_header})
+    if dr_response.status_code != 200:
+        return dr_response.json(), dr_response.status_code, {'Content-type' : 'application/json'}
+    # Check si el centro medico existe.
+    centro_response = requests.get(url = f'{ADMIN_MICROSERVICE_URL}/centros/{data["id_centro"]}', headers={'Authorization' : auth_header})
+    if centro_response.status_code != 200:
+        return centro_response.json(), centro_response.status_code, {'Content-type' : 'application/json'}
+    # Check si el paciente existe y está activo.
+    paciente_response = requests.get(url = f'{ADMIN_MICROSERVICE_URL}/admin/pacientes/{data["id_paciente"]}', headers = {'Authorization' : auth_header})
+    if paciente_response.status_code != 200:
+        return paciente_response.json(), paciente_response.status_code, {'Content-type' : 'application/json'}
+    auth_response = requests.get(url= f'{AUTH_MICROSERVICE_URL}/auth/id', headers={'Authorization' : auth_header})
+    if auth_response.status_code != 200:
+        return auth_response.json(), auth_response.status_code, {'Content-type' : 'application/json'}
+    id_usuario = auth_response.json()['payload']['id']
+    # Check si el doctor ya tiene una cita en la misma fecha y hora.
+    cita = db.session.query(Citas).filter(Citas.id_doctor == data['id_doctor']).filter(Citas.fecha == data['fecha']).first()
+    if cita is not None:
+        # Hay una cita pra ese doctor en esa fecha hora.
+        return jsonify({'msg' : 'Ya existe otra cita para ese doctor en esa fecha'}), 401, {'Content-type' : 'application/json'}
+    # Crea el objeto de la cita.
+    cita = Citas(
+        id_doctor = data['id_doctor'], 
+        id_centro = data['id_centro'], 
+        id_paciente = data['id_paciente'], 
+        id_usuario_registra = id_usuario,
+        fecha = data['fecha'], 
+        motivo = data['motivo'], 
+        estado = 'Activa'
+        )
+    db.session.add(cita)
+    db.session.commit()
+    return jsonify({'msg' : 'OK', 'payload' : cita.to_dict()}), 200, {'Content-type' : 'application/json'}
+
+def _consulta_citas_as_admin():
     pass
 
+def _consulta_citas_as_secretario():
+    pass
+
+def _consulta_citas_as_doctor():
+    pass
 
 @citas_v1_bp.route('/citas', methods = ['GET'])
-@require_rol(['admin'])
+@require_rol(['admin','doctor', 'secretario'])
 def consulta_citas():
     # Se usa para listas las citas
-    pass
+    """
+        Doctor: solo ve sus propias citas.
+        Secretaria: puede consultar citas filtrando por fecha.
+        Admin: puede filtrar por doctor, centro, fecha, estado o paciente.
+        Se usan query params para aplicar los filtros.
+    """
+    # Obtenemos  el token
+    auth_header = request.headers.get('Authorization')
+    # Probamos los roles y segun el rol ejecutamos una u otra función.
+    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/auth/check', params = {'rol' : 'admin'} ,headers = {'Authorization' : auth_header})
+    if response.status_code == 200:
+        return _consulta_citas_as_admin()
+    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/auth/check', params = {'rol' : 'secretario'} ,headers = {'Authorization' : auth_header})
+    if response.status_code == 200:
+        return _consulta_citas_as_secretario()
+    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/auth/check', params = {'rol' : 'doctor'} ,headers = {'Authorization' : auth_header})
+    if response.status_code == 200:
+        return _consulta_citas_as_doctor()
 
 @citas_v1_bp.route('/citas/<int:id>', methods = ['PUT'])
-@require_rol(['admin'])
+@require_rol(['admin','secretario'])
 def cancela_cita(id:int):
     # Se usa para cambiar de estado la cita ( cancelarla )
-    pass
+    # Check si existe la cita.
+    cita = db.session.query(Citas).filter(Citas.id_cita == id).first()
+    if cita is None:
+        return jsonify({'msg' : 'La cita a modificar NO existe'}), 404, { 'Content-type' : 'application/json'}
+    cita.estado = 'Cancelada'
+    # Forzamos la actualizacion  de los datos.
+    db.session.flush()
+    return jsonify({'msg' : 'OK', 'payload' : cita.to_dict()}), 200, {'Content-type' : 'application/json'}
 
 # Debug.................................
 

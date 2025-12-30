@@ -171,3 +171,25 @@ def show(id: int):
         return jsonify({'msg' : 'User NOT found'}), 404, {'Content-type' : 'application/json'}
     # Nos muestra los datos de un único usuario.
     return jsonify({'msg': 'OK', 'payload' : user.to_dict()}), 200, {'Content-type' : 'application/json'}
+
+@auth_v1_bp.route('/id', methods=['GET'])
+def get_user_id():
+    # Funcion para obtener el id del usuario que está autenticado. 
+    # Obtengo el token JWT a validar
+    auth_header = request.headers.get('Authorization')
+    if auth_header is None:
+        return jsonify({'msg': 'No hemos recibido el JWT'}), 401, {'Content-type' : 'application/json'}
+    # Hago un split del contenido de authentication y pillo la segunda palñabra ya que es Authorization: Bearer <token>
+    token = auth_header.split(" ")[1]
+    try:
+        payload = jwt.decode(jwt = token, key = JWT_SECRET, verify= True, algorithms =['HS256'])
+        usuario = payload['sub']
+        # Busco el usuario para ver si existe y recupero su rol.
+        user = db.session.query(Usuario).filter(Usuario.username == usuario).first()
+        if user is None:
+            return jsonify({'msg' : 'JWT token inválido'}), 403, {'Content-type' : 'application/json'}
+        # Hemos encontrado el usuario,  devolvemos el id
+        return jsonify({'msg' : 'OK', 'payload' : {'username' : user.username, 'id' : user.id_usuario}}), 200, {'Content-type' : 'application/json'}
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError,jwt.InvalidSignatureError):
+        return jsonify({'msg': 'Token invalido'}), 401, {'Content-type' : 'application/json'}
+

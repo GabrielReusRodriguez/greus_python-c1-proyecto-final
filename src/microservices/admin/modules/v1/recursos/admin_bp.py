@@ -306,7 +306,7 @@ def consulta_centros(pagina : int):
     return jsonify({'msg' : 'OK', 'payload' : centros}), 200, {'Content-type' : 'application/json'}
 
 
-@admin_v1_bp.route('/centro/<int:id>', methods=['GET'])
+@admin_v1_bp.route('/centros/<int:id>', methods=['GET'])
 def consulta_centro(id : int):
     # Obtenemos un paciente.
     centro = db.session.query(CentroMedico).filter(CentroMedico.id_centro == id).first()
