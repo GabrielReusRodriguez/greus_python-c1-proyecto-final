@@ -140,8 +140,8 @@ def create_user():
     if payload['rol'] not in ('medico', 'secretario', 'paciente', 'admin'):
         return jsonify({'msg': 'El rol no es correcto'}), 401, {'Content-type' : 'application/json'}
     # Check de si ya existe el usuario
-    if db.session.query(Usuario).filter(Usuario.username == payload['username']) is not None:
-        return jsonify({'msg': 'El usuario pasado ya existe'}), 401, {'Content-type' : 'application/json'}
+    if db.session.query(Usuario).filter(Usuario.username == payload['username']).first() is not None:
+        return jsonify({'msg': f'El usuario pasado ya existe'}), 401, {'Content-type' : 'application/json'}
     # Creamos la instancia del usuario
     user = Usuario(username= payload['username'], password = payload['password'], rol = payload['rol'])
     # agregamos la instancia a la BBDD
