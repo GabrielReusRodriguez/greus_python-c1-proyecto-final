@@ -76,7 +76,7 @@ def login():
     #usuario = Usuario.query().filter(Usuario.username == credenciales['user']).filter(Usuario.password == credenciales['password']).first()
     usuario = db.session.query(Usuario).filter(Usuario.username == credenciales['user']).filter(Usuario.password == credenciales['password']).first()
     if usuario is None:
-        return jsonify({'msg': 'Login fallado'}), 404, {'Content-type' : 'application/json'}
+        return jsonify({'msg': 'Login fallado'}), 403, {'Content-type' : 'application/json'}
 
     # Generamos el token si hemos encotnrado el usuario y password
     payload = {
