@@ -188,6 +188,18 @@ def consulta_doctor(id : int):
         return jsonify({'msg' : 'OK'}), 404, {'Content-type' : 'application/json'}
     return jsonify({'msg' : 'OK' , 'payload' : dr.to_dict()}), 200, {'Content-type' : 'application/json'}
 
+@admin_v1_bp.route('/doctores/id', methods= ['GET'])
+@require_rol(['admin'])
+def consulta_doctor_por_idusuario():
+    # Obtenemos un paciente por id de usuario
+    id_usuario = request.args.get('id_usr')
+    if id_usuario is None:
+        return jsonify({'msg' : 'No nos han pasado el id de usuario'}), 401, {'Content-type' : 'application/json'}
+    dr = db.session.query(Doctor).filter(Doctor.id_usuario == id_usuario).first()
+    if dr is None:
+        return jsonify({'msg' : 'No encontramos paciente con el usuario pasado'}), 404, {'Content-type' : 'application/json'}
+    return jsonify({'msg' : 'OK', 'payload' : dr.to_dict()}), 200, {'Content-type' : 'application/json'}
+
 
 @admin_v1_bp.route('/pacientes', methods=['POST'])
 @require_rol(['admin'])
@@ -228,7 +240,7 @@ def create_paciente():
     return jsonify({'msg' : 'OK', 'payload' : paciente.to_dict()}), 200, {'Content-type' : 'application/json'}
 
 
-@admin_v1_bp.route('/pacientes?<int:pagina>', methods=['GET'])
+@admin_v1_bp.route('/pacientes', methods=['GET'])
 @require_rol(['admin'])
 def consulta_pacientes(pagina : int):
     # Recuerda paginacion!!!
@@ -251,12 +263,24 @@ def consulta_pacientes(pagina : int):
 @admin_v1_bp.route('/pacientes/<int:id>', methods=['GET'])
 @require_rol(['admin'])
 def consulta_paciente(id : int):
-    # Obtenemos un paciente.
+    # Obtenemos un paciente por id de paciente.
     paciente = db.session.query(Paciente).filter(Paciente.id_paciente == id).first()
     if paciente is None:
         return jsonify({'msg': 'OK'}),404,{'Content-type' : 'application/json'}
     return jsonify({'msg' : 'OK' , 'payload' : paciente.to_dict()}), 200, {'Content-type': 'application/json'}
 
+
+@admin_v1_bp.route('/pacientes/id', methods= ['GET'])
+@require_rol(['admin'])
+def consulta_paciente_por_idusuario():
+    # Obtenemos un paciente por id de usuario
+    id_usuario = request.args.get('id_usr')
+    if id_usuario is None:
+        return jsonify({'msg' : 'No nos han pasado el id de usuario'}), 401, {'Content-type' : 'application/json'}
+    paciente = db.session.query(Paciente).filter(Paciente.id_usuario == id_usuario).first()
+    if paciente is None:
+        return jsonify({'msg' : 'No encontramos paciente con el usuario pasado'}), 404, {'Content-type' : 'application/json'}
+    return jsonify({'msg' : 'OK', 'payload' : paciente.to_dict()}), 200, {'Content-type' : 'application/json'}
 
 @admin_v1_bp.route('/centros',methods=['POST'])
 @require_rol(['admin'])
@@ -317,3 +341,16 @@ def consulta_centro(id : int):
 #Busqueda completa.
 
 # Endpoints para debug..................................................................................................................................
+
+
+"""
+    Propuesta para paginacion : 
+    query = db.session.query(Table1, Table2, ...).filter(...)
+
+        if page_size is not None:
+            query = query.limit(page_size)
+        if page is not None:
+            query = query.offset(page*page_size)
+        query = query.all()
+
+"""

@@ -24,7 +24,9 @@ class Citas(db.Model):
     estado = db.Column(db.String, nullable = False)
     id_paciente = db.Column(db.Integer, nullable = False)
     id_doctor = db.Column(db.Integer, nullable = False)
+    id_centro = db.Column(db.Integer, nullable = False)
     id_usuario_registra = db.Column(db.Integer, nullable = False)
+    
 
     def to_dict(self):
         # Transforma el objeto a diccionario.
