@@ -55,14 +55,12 @@ def require_rol(roles_requeridos : list):
     return decorador_interno
 
 
-#print(f"1. SECRET: {JWT_SECRET} SESSION_TIME {JWT_SESSION_TIME}")
-
 # El endpoint para hacer login, esto genera el token si se autentica bien.
 @auth_v1_bp.route('/login', methods=['POST'])
 def login():
     # Declaramos la variables del env como globales.
-    #global JWT_SECRET
-    #global JWT_SESSION_TIME
+    global JWT_SECRET
+    global JWT_SESSION_TIME
 
     # Obtenemos las credenciales de acceso que nos envia el usuario.
     credenciales = request.get_json()

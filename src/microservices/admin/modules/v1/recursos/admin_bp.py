@@ -55,15 +55,13 @@ def create_usuario():
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
         return jsonify({'msg': 'No hemos recibido el jwt'}), 403, {'Content-type' : 'application/json'}
-    # Hago un split del contenido de authentication y pillo la segunda palñabra ya que es Authorization: Bearer <token>
-    #token = auth_header.split(" ")[1]
     # Obtenemos los parámetros json.
     data = request.get_json()
     # Check... solo checqueo el rol ya que el resto se comprobará en el microservicio de autenticacion.
     if data is None:
         return jsonify({'msg' : 'No hemos recibodo parámetros'}), 401, {'Content-type' : 'application/json'}
     if data.get('rol') is None or data.get('rol') not in ('admin', 'secretario'):
-        return jsonify({'msg' : 'No hemos recibido el rol'}), 401, {'Content-type' : 'application/json'}
+        return jsonify({'msg' : 'No hemos recibido el rol correcto'}), 401, {'Content-type' : 'application/json'}
     response = requests.post(url=AUTH_MICROSERVICE_URL + "create_user", json = data, headers= {'Authorization' : auth_header})
     if response.status_code != 200:
         return response.json(), response.status_code, {'Content-type' : 'application/json'}
@@ -89,6 +87,7 @@ def consulta_usuarios():
     i = 0
     inicio_pagina = ITEMS_POR_PAGINA * pagina
     users = []
+    
     #Itero usuario por usuario buscando roles admin y secretario.
     for user in data['payload']:
         if user['rol'] == 'admin' or user['rol'] == 'secretario':
@@ -147,37 +146,15 @@ def consulta_doctores():
     # Devuelvo la lista de doctores
     doctores = []
     pagina = request.args.get('pagina')
-    if pagina is None:
-        pagina = 0 
-    i = 0
-    inicio_pagina = ITEMS_POR_PAGINA * pagina
     # Select de los drs.
     results = db.session.query(Doctor).all()
+    if pagina is not None and pagina >= 0:
+        results  = results.limit(ITEMS_POR_PAGINA)
+        results  = results.offset(pagina * ITEMS_POR_PAGINA)
+    results = results.all()
     for result in results:
-        if i >= inicio_pagina:
-            # creo el json del dr.
-            doctores.append(result.to_dict())
-        if len(doctores) > ITEMS_POR_PAGINA:
-            break
-        i = i + 1
+        doctores.append(result.to_dict())
     return jsonify({'msg' : 'OK', 'payload' : doctores}), 200, {'Content-type' : 'application/json'}
-
-    """
-    i = 0
-    inicio_pagina = ITEMS_POR_PAGINA * pagina
-    users = []
-    #Itero usuario por usuario buscando roles admin y secretario.
-    for user in data['payload']:
-        if user['rol'] == 'admin' or user['rol'] == 'secretario':
-            if i >= inicio_pagina:
-                # Borro el password ( por seguridad)
-                user['password'] = ''
-                users.append(user)
-            i = i + 1
-        if len(users) > ITEMS_POR_PAGINA:
-            break
-    return jsonify({'msg' : 'OK', 'payload' : users}), 200, {'Content-type' : 'application/json'}
-    """
 
 @admin_v1_bp.route('/doctores/<int:id>', methods=['GET'])
 @require_rol(['admin'])
@@ -243,21 +220,17 @@ def create_paciente():
 @admin_v1_bp.route('/pacientes', methods=['GET'])
 @require_rol(['admin'])
 def consulta_pacientes(pagina : int):
+    # Nos devuelve el listado de pacientes
     # Recuerda paginacion!!!
     pacientes = []
     pagina = request.args.get('pagina')
-    if pagina is None:
-        pagina = 0 
-    i = 0
-    inicio_pagina = ITEMS_POR_PAGINA * pagina
     results = db.session.query(Paciente).all()
+    if pagina is not None and pagina >= 0:
+        results  = results.limit(ITEMS_POR_PAGINA)
+        results  = results.offset(pagina * ITEMS_POR_PAGINA)
+    results = results.all()
     for result in results:
-        if i >= inicio_pagina:
-            # Añado el paciente
-            pacientes.append(result.to_dict())
-        if len(pacientes) > ITEMS_POR_PAGINA:
-            break
-        i = i + 1
+        pacientes.append(result.to_dict())
     return jsonify({'msg' : 'OK', 'payload' : pacientes}), 200, {'Content-type' : 'application/json'}
 
 @admin_v1_bp.route('/pacientes/<int:id>', methods=['GET'])
@@ -311,22 +284,18 @@ def create_centro():
     
 
 
-@admin_v1_bp.route('/centros?<int:pagina>', methods=['GET'])
-def consulta_centros(pagina : int):
+@admin_v1_bp.route('/centros', methods=['GET'])
+def consulta_centros(s):
+    # Consulta los centros con paginacion.
     centros = []
+    results = db.session.query(CentroMedico)
     pagina = request.args.get('pagina')
-    if pagina is None:
-        pagina = 0 
-    i = 0
-    inicio_pagina = ITEMS_POR_PAGINA * pagina
-    results = db.session.query(CentroMedico).all()
+    if pagina is not None and pagina >= 0:
+        results  = results.limit(ITEMS_POR_PAGINA)
+        results  = results.offset(pagina * ITEMS_POR_PAGINA)
+    results = results.all()
     for result in results:
-        if i >= inicio_pagina:
-            # Añado el paciente
-            centros.append(result.to_dict())
-        if len(centros) > ITEMS_POR_PAGINA:
-            break
-        i = i + 1
+        centros.append(result.to_dict())
     return jsonify({'msg' : 'OK', 'payload' : centros}), 200, {'Content-type' : 'application/json'}
 
 
