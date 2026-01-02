@@ -17,6 +17,274 @@ def _login(user : str, password: str) -> str:
     response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password'})
     return response.json()['token']
 
+# /admin/usuario
+
+def test_usuario_ok():
+    pass
+
+def test_usuario_ko_bad_rol():
+    pass
+
+def test_usuario_ko_no_login():
+    pass
+
+def test_usuario_ko_bad_method():
+    pass
+
+def test_usuario_ko_no_data():
+    pass
+
+def test_usuario_ko_no_rol():
+    pass
+
+# /admin/usuarios
+
+def test_usuarios_ok():
+    pass
+
+def test_usuarios_ko_bad_rol():
+    pass
+
+def test_usuarios_ko_no_login():
+    pass
+
+def test_usuario_ko_bad_method():
+    pass
+
+def test_usuario_ko_exists():
+    pass
+
+# /admin/usuarios/id
+def test_usuariosId_ok():
+    pass
+
+def test_usuariosId_ko_bad_rol():
+    pass
+
+def test_usuariosId_ko_no_login():
+    pass
+
+def test_usuarioId_ko_bad_method():
+    pass
+
+def test_usuarioId_ko_noexists():
+    pass
+
+# /admin/doctores POST
+def test_doctoresPOST_ok():
+    pass
+
+def test_doctoresPOST_ko_bad_rol():
+    pass
+
+def test_doctoresPOST_ko_no_login():
+    pass
+
+def test_doctoresPOST_ko_bad_method():
+    pass
+
+def test_doctoresPOST_ko_no_data():
+    pass
+
+def test_doctoresPOST_ko_bad_rol():
+    pass
+
+def test_doctoresPOST_ko_no_nombre():
+    pass
+
+def test_doctoresPOST_ko_no_especialidad():
+    pass
+
+def test_doctoresPOST_ko_existe():
+    pass
+
+# /admin/doctores GET
+
+def test_doctoresGET_ok():
+    pass
+
+def test_doctoresGET_ko_bad_rol():
+    pass
+
+def test_doctoresGET_ko_no_login():
+    pass
+
+def test_doctoresGET_ko_bad_method():
+    pass
+
+# /admin/doctores/<id>
+def test_doctoresID_ok():
+    pass
+
+def test_doctoresID_ko_bad_rol():
+    pass
+
+def test_doctoresID_ko_no_login():
+    pass
+
+def test_doctoresID_ko_bad_method():
+    pass
+
+def test_doctoresID_ko_no_exists():
+    pass
+
+# /admin/doctores/id
+def test_doctoresIDUser_ok():
+    pass
+
+def test_doctoresIDUser_ko_bad_rol():
+    pass
+
+def test_doctoresIDUser_ko_no_login():
+    pass
+
+def test_doctoresIDUser_ko_bad_method():
+    pass
+
+def test_doctoresIDUser_ko_no_exists():
+    pass
+
+# /admin/pacientes POST
+def test_pacientesPOST_ok():
+    pass
+
+def test_pacientesPOST_ko_bad_rol():
+    pass
+
+def test_pacientesPOST_ko_no_login():
+    pass
+
+def test_pacientesPOST_ko_bad_method():
+    pass
+
+def test_pacientesPOST_ko_no_data():
+    pass
+
+def test_pacientesPOST_ko_bad_rol():
+    pass
+
+def test_pacientesPOST_ko_no_telf():
+    pass
+
+def test_pacientesPOST_ko_no_nombre():
+    pass
+
+def test_pacientesPOST_ko_no_estado():
+    pass
+
+def test_pacientesPOST_ko_existe():
+    pass
+
+
+# /admin/pacientes GET
+
+def test_pacientesGET_ok():
+    pass
+
+def test_pacientesGET_ko_bad_rol():
+    pass
+
+def test_pacientesGET_ko_no_login():
+    pass
+
+def test_pacientesGET_ko_bad_method():
+    pass
+
+# /admin/pacientes/<id>
+def test_pacientesID_ok():
+    pass
+
+def test_pacientesID_ko_bad_rol():
+    pass
+
+def test_pacientesID_ko_no_login():
+    pass
+
+def test_pacientesID_ko_bad_method():
+    pass
+
+def test_pacientesID_ko_no_exists():
+    pass
+
+# /admin/pacientes/id
+
+def test_pacientesIDUser_ok():
+    pass
+
+def test_pacientesIDUser_ko_bad_rol():
+    pass
+
+def test_pacientesIDUser_ko_no_login():
+    pass
+
+def test_pacientesIDUser_ko_bad_method():
+    pass
+
+def test_pacientesIDUser_ko_no_exists():
+    pass
+
+# /admin/centros POST
+def test_centrosPOST_ok():
+    pass
+
+def test_centrosPOST_ko_bad_rol():
+    pass
+
+def test_centrosPOST_ko_no_login():
+    pass
+
+def test_centrosPOST_ko_bad_method():
+    pass
+
+def test_centrosPOST_ko_no_data():
+    pass
+
+def test_centrosPOST_ko_bad_rol():
+    pass
+
+def test_centrosPOST_ko_no_direccion():
+    pass
+
+def test_centrosPOST_ko_no_nombre():
+    pass
+
+def test_centrosPOST_ko_existe():
+    pass
+
+
+# /admin/centros GET
+def test_centrosGET_ok():
+    pass
+
+def test_centrosGET_ko_bad_rol():
+    pass
+
+def test_centrosGET_ko_no_login():
+    pass
+
+def test_centrosGET_ko_bad_method():
+    pass
+
+
+# /admin/centros/<id>
+
+def test_centrosID_ok():
+    pass
+
+def test_centrosID_ko_bad_rol():
+    pass
+
+def test_centrosID_ko_no_login():
+    pass
+
+def test_centrosID_ko_bad_method():
+    pass
+
+def test_centrosID_ko_no_exists():
+    pass
+
+
+"""
 # /auth/login service *********************************************************************
 def test_login_ok():
     response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password'})
@@ -113,9 +381,6 @@ def test_create_user_ko_mal_metodo():
 def test_create_user_ko_no_login():
     pass
 
-def test_create_user_ko_exists():
-    pass
-
 # /auth/show_all    ***************************************************************************
 
 def test_show_all_ok():
@@ -151,3 +416,5 @@ def test_id_ko_no_login():
 
 def test_id_ko_mal_metodo():
     pass
+
+"""

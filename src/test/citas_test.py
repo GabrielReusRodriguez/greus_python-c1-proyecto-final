@@ -17,6 +17,76 @@ def _login(user : str, password: str) -> str:
     response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password'})
     return response.json()['token']
 
+# /citas/citas/ POST
+def test_citasPOST_ok():
+    pass
+
+def test_citasPOST_ko_bad_rol():
+    pass
+
+def test_citasPOST_ko_no_login():
+    pass
+
+def test_citasPOST_ko_bad_method():
+    pass
+
+def test_citasPOST_ko_no_data():
+    pass
+
+def test_citasPOST_ko_bad_rol():
+    pass
+
+def test_citasPOST_ko_no_telf():
+    pass
+
+def test_citasPOST_ko_no_nombre():
+    pass
+
+def test_citasPOST_ko_no_estado():
+    pass
+
+def test_citasPOST_ko_existe():
+    pass
+
+# /citas/citas GET 
+
+def test_citasGET_ko_bad_rol():
+    pass
+
+def test_citasGET_ko_no_login():
+    pass
+
+def test_citasGET_ko_bad_method():
+    pass
+
+def test_citasGET_ok_doctor():
+    pass
+
+def test_citasGET_ok_admin():
+    pass
+
+def test_citasGET_ok_secretario():
+    pass
+
+# /citas/<ID> PUT
+
+def test_citasIDPut_ok():
+    pass
+
+def test_citasIDPut_ko_bad_rol():
+    pass
+
+def test_citasIDPut_ko_no_login():
+    pass
+
+def test_citasIDPut_ko_bad_method():
+    pass
+
+def test_citasIDPut_ko_no_exists():
+    pass
+
+
+"""
 # /auth/login service *********************************************************************
 def test_login_ok():
     response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password'})
@@ -113,9 +183,6 @@ def test_create_user_ko_mal_metodo():
 def test_create_user_ko_no_login():
     pass
 
-def test_create_user_ko_exists():
-    pass
-
 # /auth/show_all    ***************************************************************************
 
 def test_show_all_ok():
@@ -151,3 +218,4 @@ def test_id_ko_no_login():
 
 def test_id_ko_mal_metodo():
     pass
+"""
