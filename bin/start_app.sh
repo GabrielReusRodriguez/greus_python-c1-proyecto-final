@@ -65,6 +65,7 @@ cd "${DEPLOY_FOLDER}"
 # ejecuto el contenedor.
 ./run.sh
 
+#exit 1
 
 # Deploy de microservicio de admin ****************************************************
 

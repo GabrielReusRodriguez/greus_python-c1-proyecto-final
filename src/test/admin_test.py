@@ -9,12 +9,12 @@ import requests
 """
 
 SERVER = 'localhost'
-PORT = 2203
-URL = f'http://{SERVER}:{PORT}/auth'
+PORT = 2204
+URL = f'http://{SERVER}:{PORT}/admin'
 
 
 def _login(user : str, password: str) -> str:
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password'})
+    response = requests.post(url = f'{URL}/login', json = {'user' : user, 'password' : password})
     return response.json()['token']
 
 # /admin/usuario
