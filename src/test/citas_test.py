@@ -14,7 +14,7 @@ URL = f'http://{SERVER}:{PORT}/citas'
 
 
 def _login(user : str, password: str) -> str:
-    response = requests.post(url = f'{URL}/login', json = {'user' : user, 'password' : password})
+    response = requests.post(url = f'http://{SERVER}:2203/auth/login', json = {'user' : user, 'password' : password})
     return response.json()['token']
 
 # /citas/citas/ POST
