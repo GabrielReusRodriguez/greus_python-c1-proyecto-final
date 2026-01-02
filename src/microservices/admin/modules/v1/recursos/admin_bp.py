@@ -48,7 +48,7 @@ def require_rol(roles_requeridos : list):
 
 
 # El endpoint para crea un usuario con rol admin o secretaria.
-@admin_v1_bp.route('/usuario', methods=['POST'])
+@admin_v1_bp.route('/usuarios', methods=['POST'])
 @require_rol(['admin'])
 def create_usuario():
     # Obtengo el token jwt
@@ -59,7 +59,7 @@ def create_usuario():
     data = request.get_json()
     # Check... solo checqueo el rol ya que el resto se comprobará en el microservicio de autenticacion.
     if data is None:
-        return jsonify({'msg' : 'No hemos recibodo parámetros'}), 401, {'Content-type' : 'application/json'}
+        return jsonify({'msg' : 'No hemos recibido parámetros'}), 401, {'Content-type' : 'application/json'}
     if data.get('rol') is None or data.get('rol') not in ('admin', 'secretario'):
         return jsonify({'msg' : 'No hemos recibido el rol correcto'}), 401, {'Content-type' : 'application/json'}
     response = requests.post(url=AUTH_MICROSERVICE_URL + "create_user", json = data, headers= {'Authorization' : auth_header})
