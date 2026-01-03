@@ -108,7 +108,7 @@ def consulta_usuario(id:int):
     auth_header = request.headers.get('Authorization')
     if auth_header is None:
         return jsonify({'msg': 'No hemos recibido el jwt'}), 403, {'Content-type' : 'application/json'}
-    response = requests.get(url = AUTH_MICROSERVICE_URL + f"show/{id}", headers={'Authorization' : header})
+    response = requests.get(url = AUTH_MICROSERVICE_URL + f"show/{id}", headers={'Authorization' : auth_header})
     return response.json(), response.status_code, {'Content-type' : 'application/json'}
     
 
