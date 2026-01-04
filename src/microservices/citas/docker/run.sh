@@ -7,4 +7,4 @@
 
 #docker run --rm --network odontocare-network --ip 172.16.0.2 -p 2204:2204  uoc-admin 
 #docker run --rm --network host  -p 2204:2204  uoc-admin
-docker run --rm --env-file ./.env-urls --env-file ./.env --network host  uoc-citas 
+docker run -d --rm --env-file ./.env-urls --env-file ./.env --network host  uoc-citas 

@@ -151,36 +151,53 @@ def _consulta_citas_as_admin(auth_hdr: str):
     citas = db.session.query(Citas)
     dr = request.args.get('id_dr')
     if dr is not None:
-        citas.filter(Citas.id_doctor == dr)
+        citas = citas.filter(Citas.id_doctor == dr)
     centro = request.args.get('id_centro')
     if centro is not None:
-        citas.filter(Citas.id_centro == centro)
+        citas = citas.filter(Citas.id_centro == centro)
     fecha = request.args.get('fecha')
     if fecha is not None:
-        citas.filter(Citas.fecha == fecha)
+        format_fecha = '%d/%m/%Y'
+        # Probamos si tiene el formato correcto
+        try:
+            datetime.datetime.strptime(fecha, format_fecha)
+        except ValueError as e:
+            return jsonify({'msg' : f'La fecha recibida no tiene el formato correcto {fecha}'}), 401, {'Content-type' : 'application/json'}
+        # Creamos la fecha inicial y final de la busqueda
+        fecha_init = str_2_datetime(fecha = f'{fecha} 00:00:00')
+        fecha_end = str_2_datetime(fecha = f'{fecha} 23:59:00')
+        citas = citas.filter(Citas.fecha >= fecha_init).filter(Citas.fecha <= fecha_end)
     estado = request.args.get('estado')
     if estado is not None:
-        citas.filter(Citas.estado == estado)
+        citas = citas.filter(Citas.estado == estado)
     paciente = request.args.get('id_paciente')
     if paciente is not None:
-        citas.filter(Citas.id_paciente == paciente)
+        citas = citas.filter(Citas.id_paciente == paciente)
     citas = citas.all()
     json_citas = []
     for cita in citas:
         json_citas.append(cita.to_dict())
     return jsonify({'msg' : 'OK', 'payload' : json_citas}), 200, {'Content-type' : 'application/json'}
 
-
-
 def _consulta_citas_as_secretario(auth_hdr: str):
     # Implementa la logica de consulta como secretario.
     # Secretaria: puede consultar citas filtrando por fecha.
     # Se usan query params para aplicar los filtros.
     
-    fecha = rquest.args.get('fecha')
+    fecha = request.args.get('fecha')
     if fecha is None:
         return jsonify({'msg' : 'No hemos recibido la fecha'}), 401, {'Content-type' : 'application/json'}
-    citas = db.session.query(Citas).filter(Citas.fecha == fecha).all()
+    format_fecha = '%d/%m/%Y'
+    # Probamos si tiene el formato correcto
+    try:
+        datetime.datetime.strptime(fecha, format_fecha)
+    except ValueError as e:
+        return jsonify({'msg' : f'La fecha recibida no tiene el formato correcto {fecha}'}), 401, {'Content-type' : 'application/json'}
+    # Creamos la fecha inicial y final de la busqueda
+    fecha_init = str_2_datetime(fecha = f'{fecha} 00:00:00')
+    fecha_end = str_2_datetime(fecha = f'{fecha} 23:59:00')
+    #citas = db.session.query(Citas).filter(Citas.fecha == fecha).all()
+    citas = db.session.query(Citas).filter(Citas.fecha >= fecha_init).filter(Citas.fecha <=fecha_end).filter(Citas.estado == 'Activa').all()
     json_citas = []
     for cita in citas:
         json_citas.append(cita.to_dict())
@@ -240,6 +257,7 @@ def cancela_cita(id:int):
         return jsonify({'msg' : 'La cita a modificar NO existe'}), 404, { 'Content-type' : 'application/json'}
     cita.estado = 'Cancelada'
     # Forzamos la actualizacion  de los datos.
+    db.session.commit()
     db.session.flush()
     return jsonify({'msg' : 'OK', 'payload' : cita.to_dict()}), 200, {'Content-type' : 'application/json'}
 
