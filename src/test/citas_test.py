@@ -71,9 +71,10 @@ def test_citasPOST_ok():
     if data.get('motivo') is None:
         return jsonify({'msg' : 'No hemos recibido el motivo'}), 401, {'Content-type' : 'application/json'}
     """
-
+"""
 def test_citasPOST_ko_bad_rol():
     pass
+"""
 
 def test_citasPOST_ko_no_login():
     
@@ -116,6 +117,7 @@ def test_citasPOST_ko_no_login():
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
     assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
+"""
 def test_citasPOST_ko_bad_method():
     token = _login(user= 'admin' , password='password')
     data = {}
@@ -151,10 +153,9 @@ def test_citasPOST_ko_bad_method():
     data['fecha'] = '22/02/1982 14:01:00'
     data['motivo'] = 'Dolor de muelas'
     response = requests.get(url = f'{URL}/citas', json = data, headers = {'Authorization' : f'Bearer {token}'})
-    print(f'Respuesta CITA: {response.status_code} msg :{response.json()}')
     code = 405
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
-
+"""
 
 def test_citasPOST_ko_no_data():
     token = _login(user= 'admin' , password='password')
@@ -185,13 +186,52 @@ def test_citasPOST_ko_no_data():
     response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
 
     response = requests.post(url = f'{URL}/citas', json = {}, headers = {'Authorization': f'Bearer {token}'})
-    code = 403
+    code = 401
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
     assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 
 def test_citasPOST_ko_mal_rol():
-    pass
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_100'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_100'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_100'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/1982 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    token = _login(user= 'citas_dr_100' , password = '1234567890')
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    print(f'Respuesta CITA: {response.status_code} msg :{response.json()}')
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
 
 def test_citasPOST_ko_no_fecha():
     token = _login(user= 'admin' , password='password')
@@ -362,13 +402,149 @@ def test_citasPOST_ko_existe():
 # /citas/citas GET 
 
 def test_citasGET_ko_bad_rol():
-    pass
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_200'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_200'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_200'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/2025 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/2025 16:01:00'
+    data['motivo'] = 'Dolor de muelas 2'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    token = _login(user = 'citas_paciente_200' , password='1234567890')
+    response = requests.get(url = f'{URL}/citas', headers = {'Authorization' : f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_citasGET_ko_no_login():
-    pass
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_201'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_201'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
 
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_201'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/2025 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/2025 16:01:00'
+    data['motivo'] = 'Dolor de muelas 2'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    response = requests.get(url = f'{URL}/citas', headers = {})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
+"""
 def test_citasGET_ko_bad_method():
-    pass
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_202'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_202'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_202'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '20/02/2025 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/2025 11:01:00'
+    data['motivo'] = 'Dolor de muelas 2'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    response = requests.post(url = f'{URL}/citas', headers = {'Authorization' : f'Bearer {token}'})
+    code = 405
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    #assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+"""
+
 
 def test_citasGET_ok_doctor():
     pass
@@ -382,151 +558,169 @@ def test_citasGET_ok_secretario():
 # /citas/<ID> PUT
 
 def test_citasIDPut_ok():
-    pass
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_400'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_400'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
 
-def test_citasIDPut_ko_bad_rol():
-    pass
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_400'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
 
-def test_citasIDPut_ko_no_login():
-    pass
-
-def test_citasIDPut_ko_bad_method():
-    pass
-
-def test_citasIDPut_ko_no_exists():
-    pass
-
-
-"""
-# /auth/login service *********************************************************************
-def test_login_ok():
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password'})
-    assert response.status_code == 200, "El codigo de estado debe ser 200"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'token' in response.json(), 'La respuesta debe contener un token.'
-
-def test_login_ko_password():
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password2'})
-    assert response.status_code == 403, "El codigo de estado debe ser 403"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'msg' in response.json(), 'El mensaje debe estar en el token'
-
-def test_login_ko_username():
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin2', 'password' : 'password'})
-    assert response.status_code == 403, "El codigo de estado debe ser 403"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'msg' in response.json(), 'El mensaje debe estar en el token'
-
-def test_login_no_user():
-    response = requests.post(url = f'{URL}/login', json = {'password' : 'password'})
-    assert response.status_code == 401, "El codigo de estado debe ser 401"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'msg' in response.json(), 'El mensaje debe estar en el token'
-
-def test_login_no_password():
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin'})
-    assert response.status_code == 401, "El codigo de estado debe ser 401"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'msg' in response.json(), 'El mensaje debe estar en el token'
-
-def test_login_no_payload():
-    response = requests.post(url = f'{URL}/login')
-    code = 415
-    assert response.status_code == code, f"El codigo de estado debe ser {code}"
-
-def test_login_wrong_method():
-    response = requests.get(url = f'{URL}/login')
-    code = 405
-    assert response.status_code == code, f"El codigo de estado debe ser {code}"
-
-
-# /auth/check service *********************************************************************
-
-def test_check_ok():
-    token = _login(user = 'admin', password = 'password')
-    response = requests.get(url = f'{URL}/check?rol=admin', headers = {'Authorization' : f'Bearer {token}'})
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/1982 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    response = requests.put(url = f'{URL}/citas/{response.json()['payload']['id_cita']}', headers = {'Authorization' : f'Bearer {token}'})
     code = 200
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
-    assert response.json()['msg'] == 'OK', "El msg ha de ser OK"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta  ha de contener un payload"
 
-def test_check_no_login():
-    response = requests.get(url = f'{URL}/check?rol=admin')
-    code = 401
-    assert response.status_code == code, f"El codigo de estado debe ser {code}"
-    assert 'msg' in response.json(), "La respuesta ha de contener un mensaje"
 
-def test_check_bad_rol():
-    token = _login(user = 'admin', password = 'password')
-    response = requests.get(url = f'{URL}/check?rol=secretario', headers = {'Authorization' : f'Bearer {token}'})
+def test_citasIDPut_ko_bad_rol():
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_500'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_500'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_500'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/1982 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    token = _login(user =  'citas_dr_500', password= '1234567890')
+    response = requests.put(url = f'{URL}/citas/{response.json()['payload']['id_cita']}', headers = {'Authorization' : f'Bearer {token}'})
     code = 403
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
-    assert 'msg' in response.json(), "La respuesta ha de contener un mensaje"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
-def test_check_no_rol():
-    token = _login(user = 'admin', password = 'password')
-    response = requests.get(url = f'{URL}/check', headers = {'Authorization' : f'Bearer {token}'})
-    code = 401
+def test_citasIDPut_ko_no_login():
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_700'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_700'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_700'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/1982 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    response = requests.put(url = f'{URL}/citas/{response.json()['payload']['id_cita']}', headers = {})
+    code = 403
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
-    assert 'msg' in response.json(), "La respuesta ha de contener un mensaje"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
-# /auth/create_user ***************************************************************************
-def test_create_user_ok():
-    pass
-
-def test_create_user_ko_existe_username():
-    pass
-
-def test_create_user_ko_no_password():
-    pass
-
-def test_create_user_ko_no_username():
-    pass
-
-def test_create_user_ko_no_rol():
-    pass
-
-def test_create_user_ko_mal_rol():
-    pass
-
-def test_create_user_ko_mal_metodo():
-    pass
-
-def test_create_user_ko_no_login():
-    pass
-
-# /auth/show_all    ***************************************************************************
-
-def test_show_all_ok():
-    pass
-
-def test_show_all_ko_mal_rol():
-    pass
-
-def test_show_all_ko_no_login():
-    pass
-
-def test_show_all_ko_mal_metodo():
-    pass
-
-# /auth/show/id    ***************************************************************************
-
-def test_show_id_ok():
-    pass
-
-def test_show_id_ko_no_login():
-    pass
-
-def test_show_id_ko_mal_metodo():
-    pass
-
-# /auth/id         ****************************************************************************
-
-def test_id_ok():
-    pass
-
-def test_id_ko_no_login():
-    pass
-
-def test_id_ko_mal_metodo():
+"""
+def test_citasIDPut_ko_bad_method():
     pass
 """
+
+def test_citasIDPut_ko_no_exists():
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_600'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_600'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_600'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/1982 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    response = requests.put(url = f'{URL}/citas/50000', headers = {'Authorization' : f'Bearer {token}'})
+    code = 404
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"

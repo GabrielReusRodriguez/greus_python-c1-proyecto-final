@@ -126,7 +126,7 @@ def create_cita():
         return auth_response.json(), auth_response.status_code, {'Content-type' : 'application/json'}
     id_usuario = auth_response.json()['payload']['id']
     # Check si el doctor ya tiene una cita en la misma fecha y hora.
-    cita = db.session.query(Citas).filter(Citas.id_doctor == data['id_doctor']).filter(Citas.fecha == data['fecha']).first()
+    cita = db.session.query(Citas).filter(Citas.id_doctor == data['id_doctor']).filter(Citas.fecha == str_2_datetime(data['fecha'])).first()
     if cita is not None:
         # Hay una cita pra ese doctor en esa fecha hora.
         return jsonify({'msg' : 'Ya existe otra cita para ese doctor en esa fecha'}), 401, {'Content-type' : 'application/json'}
