@@ -94,7 +94,7 @@ def test_create_user_ok():
     data = {}
     data['username'] = 'qwerty1'
     data['password'] = '1234567890'
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     response = requests.post(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     code = 200
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
@@ -106,7 +106,7 @@ def test_create_user_ko_existe_username():
     data = {}
     data['username'] = 'qwerty1'
     data['password'] = '1234567890'
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     response = requests.post(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     code = 401
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
@@ -116,7 +116,7 @@ def test_create_user_ko_no_password():
     token = _login(user = 'admin', password = 'password')
     data = {}
     data['username'] = 'qwerty1'
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     response = requests.post(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     code = 401
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
@@ -125,7 +125,7 @@ def test_create_user_ko_no_password():
     data = {}
     data['username'] = 'qwerty1'
     data['password'] = ''
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     response = requests.post(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     code = 401
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
@@ -136,7 +136,7 @@ def test_create_user_ko_no_username():
     token = _login(user = 'admin', password = 'password')
     data = {}
     data['password'] = '1234567890'
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     response = requests.post(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     code = 401
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
@@ -185,7 +185,7 @@ def test_create_user_ko_mal_metodo():
     data = {}
     data['username'] = 'qwerty6'
     data['password'] = '1234567890'
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     response = requests.get(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     code = 405
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
@@ -194,7 +194,7 @@ def test_create_user_ko_no_login():
     data = {}
     data['username'] = 'qwerty7'
     data['password'] = '1234567890'
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     #response = requests.post(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     response = requests.post(url = f'{URL}/create_user', json = data)
     code = 401
@@ -214,7 +214,7 @@ def test_create_user_ko_bad_login_rol():
     data = {}
     data['username'] = 'qerty8'
     data['password'] = '1234567890'
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     response = requests.post(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     code = 403
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
@@ -239,7 +239,7 @@ def test_show_all_ko_mal_rol():
     data = {}
     data['username'] = 'doctor'
     data['password'] = '1234567890'
-    data['rol'] = 'medico'
+    data['rol'] = 'doctor'
     response = requests.post(url = f'{URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
     # Login con el usuario que no tiene los roles.
     token = _login(user = 'doctor', password = '1234567890')

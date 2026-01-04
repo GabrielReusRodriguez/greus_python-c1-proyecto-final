@@ -149,9 +149,9 @@ def consulta_doctores():
     # Select de los drs.
     results = db.session.query(Doctor).all()
     if pagina is not None and pagina >= 0:
-        results  = results.limit(ITEMS_POR_PAGINA)
         results  = results.offset(pagina * ITEMS_POR_PAGINA)
-    results = results.all()
+        results  = results.limit(ITEMS_POR_PAGINA)
+    #results = results
     for result in results:
         doctores.append(result.to_dict())
     return jsonify({'msg' : 'OK', 'payload' : doctores}), 200, {'Content-type' : 'application/json'}
@@ -168,7 +168,7 @@ def consulta_doctor(id : int):
 @admin_v1_bp.route('/doctores/id', methods= ['GET'])
 @require_rol(['admin'])
 def consulta_doctor_por_idusuario():
-    # Obtenemos un paciente por id de usuario
+    # Obtenemos un doctor por id de usuario
     id_usuario = request.args.get('id_usr')
     if id_usuario is None:
         return jsonify({'msg' : 'No nos han pasado el id de usuario'}), 401, {'Content-type' : 'application/json'}
@@ -210,7 +210,7 @@ def create_paciente():
     if response.status_code != 200:
         return response.json(), response.status_code, {'Content-type' : 'application/json'}
     # Tenemos el user creado, ahopra creamos los datos del doctor.
-    paciente = Paciente(nombre= data.get('nombre'), teléfono= data.get('telefono'),estado = data.get('estado'), id_usuario  = response.json()['payload']['id_usuario'])
+    paciente = Paciente(nombre= data.get('nombre'), telefono= data.get('telefono'),estado = data.get('estado'), id_usuario  = response.json()['payload']['id_usuario'])
     db.session.add(paciente)
     db.session.commit()
     # Si ha llegado hasta aqui, significa que el usuario se ha creado bien por lo que seguimos creando el tipo de usuario = medico, admin...
@@ -219,16 +219,16 @@ def create_paciente():
 
 @admin_v1_bp.route('/pacientes', methods=['GET'])
 @require_rol(['admin'])
-def consulta_pacientes(pagina : int):
+def consulta_pacientes():
     # Nos devuelve el listado de pacientes
     # Recuerda paginacion!!!
     pacientes = []
     pagina = request.args.get('pagina')
     results = db.session.query(Paciente).all()
     if pagina is not None and pagina >= 0:
-        results  = results.limit(ITEMS_POR_PAGINA)
         results  = results.offset(pagina * ITEMS_POR_PAGINA)
-    results = results.all()
+        results  = results.limit(ITEMS_POR_PAGINA)
+    #results = results.all()
     for result in results:
         pacientes.append(result.to_dict())
     return jsonify({'msg' : 'OK', 'payload' : pacientes}), 200, {'Content-type' : 'application/json'}
@@ -275,6 +275,10 @@ def create_centro():
     if data.get('nombre') is None:
         return jsonify({'msg': 'No hemos recibido el nombre'}), 401, {'Content-type' : 'application/json'}
 
+    # Check si existe el centro
+    cent = db.session.query(CentroMedico).filter(CentroMedico.nombre == data['nombre']).first()
+    if cent is not None:
+        return jsonify({'msg' : 'El centro ya existe'}), 401, {'Content-type' : 'application/json'}
     # Creamos el centro...
     centro = CentroMedico(nombre= data.get('nombre'), direccion = data.get('direccion'))
     db.session.add(centro)
@@ -283,16 +287,16 @@ def create_centro():
     return jsonify({'msg' : 'OK', 'payload' : centro.to_dict()}), 200, {'Content-type' : 'application/json'}
     
 
-
 @admin_v1_bp.route('/centros', methods=['GET'])
-def consulta_centros(s):
+@require_rol(['admin'])
+def consulta_centros():
     # Consulta los centros con paginacion.
     centros = []
     results = db.session.query(CentroMedico)
     pagina = request.args.get('pagina')
     if pagina is not None and pagina >= 0:
-        results  = results.limit(ITEMS_POR_PAGINA)
         results  = results.offset(pagina * ITEMS_POR_PAGINA)
+        results  = results.limit(ITEMS_POR_PAGINA)
     results = results.all()
     for result in results:
         centros.append(result.to_dict())
@@ -300,6 +304,7 @@ def consulta_centros(s):
 
 
 @admin_v1_bp.route('/centros/<int:id>', methods=['GET'])
+@require_rol(['admin'])
 def consulta_centro(id : int):
     # Obtenemos un paciente.
     centro = db.session.query(CentroMedico).filter(CentroMedico.id_centro == id).first()

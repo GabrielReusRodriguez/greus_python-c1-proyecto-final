@@ -22,7 +22,7 @@ class Paciente(db.Model):
     id_usuario = db.Column(db.Integer, nullable = False)
     nombre =    db.Column(db.String, nullable = False)
     telefono = db.Column(db.String, nullable = False)
-    estado  =  db.Column(db.Boolean, nullable = False)
+    estado  =  db.Column(db.String, nullable = False)
 
     def to_dict(self):
         # Método para convertir el objeto en un diccionario.

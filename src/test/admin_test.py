@@ -326,11 +326,11 @@ def test_doctoresGET_ko_bad_rol():
     token = _login(user = 'admin', password = 'password')
     data = {}
     data['rol'] = 'secretario'
-    data['username'] = '113asdwqegtdsgbed'
+    data['username'] = '113asegtdsgbed'
     data['password'] = '1234567890'
-    response = requests.get(url = f'{URL}/usuarios', headers = {'Authorization': f'Bearer {token}'})
+    response = requests.post(url = f'{URL}/usuarios', json = data, headers = {'Authorization': f'Bearer {token}'})
     token = _login(user = data['username'], password = data['password'])
-    response = requests.get(url = f'{URL}/usuarios', headers = {'Authorization': f'Bearer {token}'})
+    response = requests.get(url = f'{URL}/doctores', headers = {'Authorization': f'Bearer {token}'})
     code = 403
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
     assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
@@ -341,7 +341,6 @@ def test_doctoresGET_ko_no_login():
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
     assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
-
 """
 def test_doctoresGET_ko_bad_method():
     pass
@@ -349,307 +348,525 @@ def test_doctoresGET_ko_bad_method():
 
 # /admin/doctores/<id>
 def test_doctoresID_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'doctor'
+    data['username'] = '22asdwqegtdsgbed'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus 2'
+    data['especialidad'] = 'ondontologia'
+    response = requests.post(url = f'{URL}/doctores', json = data,  headers={'Authorization' : f'Bearer {token}'})
+    response = requests.get(url = f'{URL}/doctores/1', headers={'Authorization' : f'Bearer {token}'})
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
 
 def test_doctoresID_ko_bad_rol():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'doctor'
+    data['username'] = '22asdwqegtdsgbed23434'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus 2'
+    data['especialidad'] = 'ondontologia'
+    response = requests.post(url = f'{URL}/doctores', json = data,  headers={'Authorization' : f'Bearer {token}'})
+    token = _login(user = data['username'], password = data['password'])
+    response = requests.get(url = f'{URL}/doctores/1', headers={'Authorization' : f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_doctoresID_ko_no_login():
-    pass
+    response = requests.get(url = f'{URL}/doctores/1', headers={})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_doctoresID_ko_bad_method():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.post(url = f'{URL}/doctores/1', json = {}, headers={'Authorization' : f'Bearer {token}'})
+    code = 405
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+
 
 def test_doctoresID_ko_no_exists():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.get(url = f'{URL}/doctores/4568', headers={'Authorization' : f'Bearer {token}'})
+    code = 404
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
 
 # /admin/doctores/id
 def test_doctoresIDUser_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'doctor'
+    data['username'] = '001asddas'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus 2'
+    data['especialidad'] = 'ondontologia'
+    response = requests.post(url = f'{URL}/doctores', json = data,  headers={'Authorization' : f'Bearer {token}'})
+    response = requests.get(url = f'{URL}/doctores/id', params = {'id_usr' : response.json()['payload']['id_usuario']}, headers = {'Authorization': f'Bearer {token}'})
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
 
 def test_doctoresIDUser_ko_bad_rol():
-    pass
+    token = _login(user = '22asdwqegtdsgbed', password = '1234567890')
+    response = requests.get(url = f'{URL}/doctores/id', params = {'id_usr' : 1}, headers = {'Authorization': f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_doctoresIDUser_ko_no_login():
-    pass
+    response = requests.get(url = f'{URL}/doctores/id', params = {'id_usr' : 1}, headers = {})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_doctoresIDUser_ko_bad_method():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.post(url = f'{URL}/doctores/id', params = {'id_usr' : 1}, headers = {'Authorization': f'Bearer {token}'})
+    code = 405
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
 
 def test_doctoresIDUser_ko_no_exists():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.get(url = f'{URL}/doctores/id', params = {'id_usr' : 1000}, headers = {'Authorization': f'Bearer {token}'})
+    code = 404
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
 
 # /admin/pacientes POST
 def test_pacientesPOST_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
 
 def test_pacientesPOST_ko_bad_rol():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897_2'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    token = _login(user = data['username'], password = data['password'])
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_pacientesPOST_ko_no_login():
-    pass
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897_3'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
+"""
 def test_pacientesPOST_ko_bad_method():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897_4'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.get(url = f'{URL}/pacientes', headers = {'Authorization' : f'Bearer {token}'})
+    code = 405
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+"""
 
 def test_pacientesPOST_ko_no_data():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897_5'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', headers = {'Authorization' : f'Bearer {token}'})
+    code = 415
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    #assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
-def test_pacientesPOST_ko_bad_rol():
-    pass
+def test_pacientesPOST_ko_no_rol():
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    #data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897_6'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_pacientesPOST_ko_no_telf():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897_7'
+    data['password'] = '1234567890'
+    #data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_pacientesPOST_ko_no_nombre():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897_8'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    #data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_pacientesPOST_ko_no_estado():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897_9'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    #data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_pacientesPOST_ko_existe():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'sdasdasdasdasds897897'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 
 # /admin/pacientes GET
 
 def test_pacientesGET_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.get(url = f'{URL}/pacientes', headers = {'Authorization' : f'Bearer {token}'})
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
+    assert len(response.json()['payload']) > 1, "La repsuesta ha de devolver pacientes"
 
 def test_pacientesGET_ko_bad_rol():
-    pass
+    token = _login(user = 'sdasdasdasdasds897897', password = '1234567890')
+    response = requests.get(url = f'{URL}/pacientes', headers = {'Authorization' : f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_pacientesGET_ko_no_login():
-    pass
+    response = requests.get(url = f'{URL}/pacientes', headers = {})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
+"""
 def test_pacientesGET_ko_bad_method():
     pass
+"""
 
 # /admin/pacientes/<id>
 def test_pacientesID_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'paciente01'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data,  headers={'Authorization' : f'Bearer {token}'})
+    response = requests.get(url = f'{URL}/pacientes/{response.json()['payload']['id_paciente']}', headers = {'Authorization': f'Bearer {token}'})
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
+
 
 def test_pacientesID_ko_bad_rol():
-    pass
+    token = _login(user = 'paciente01', password = '1234567890')
+    response = requests.get(url = f'{URL}/pacientes/1', headers = {'Authorization': f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_pacientesID_ko_no_login():
-    pass
+    response = requests.get(url = f'{URL}/pacientes/1', headers = {})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
 
 def test_pacientesID_ko_bad_method():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.post(url = f'{URL}/pacientes/1', headers = {'Authorization': f'Bearer {token}'})
+    code = 405
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
 
 def test_pacientesID_ko_no_exists():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.get(url = f'{URL}/pacientes/1000', headers = {'Authorization': f'Bearer {token}'})
+    code = 404
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
 
 # /admin/pacientes/id
 
 def test_pacientesIDUser_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'paciente02'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data,  headers={'Authorization' : f'Bearer {token}'})
+    response = requests.get(url = f'{URL}/pacientes/id', params = {'id_usr': response.json()['payload']['id_usuario']}, headers = {'Authorization': f'Bearer {token}'})
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
+
 
 def test_pacientesIDUser_ko_bad_rol():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'paciente03'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data,  headers={'Authorization' : f'Bearer {token}'})
+    token = _login(user = data['username'], password= data['password'])
+    response = requests.get(url = f'{URL}/pacientes/id', params = {'id_usr': response.json()['payload']['id_usuario']}, headers = {'Authorization': f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
 
 def test_pacientesIDUser_ko_no_login():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'paciente04'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response = requests.post(url = f'{URL}/pacientes', json = data,  headers={'Authorization' : f'Bearer {token}'})
+    response = requests.get(url = f'{URL}/pacientes/id', params = {'id_usr': response.json()['payload']['id_usuario']}, headers = {})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
+"""
 def test_pacientesIDUser_ko_bad_method():
     pass
+"""
 
 def test_pacientesIDUser_ko_no_exists():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.get(url = f'{URL}/pacientes/id', params = {'id_usr': 10000}, headers = {'Authorization': f'Bearer {token}'})
+    code = 404
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 # /admin/centros POST
 def test_centrosPOST_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['nombre'] = 'centro1'
+    data['direccion'] = 'direccion'
+    response = requests.post(url = f'{URL}/centros', json = data, headers = {'Authorization' : f'Bearer {token}'} )
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
 
 def test_centrosPOST_ko_bad_rol():
-    pass
+    token = _login(user = 'paciente02', password = '1234567890')
+    data = {}
+    data['nombre'] = 'centro1'
+    data['direccion'] = 'direccion'
+    response = requests.post(url = f'{URL}/centros', json = data, headers = {'Authorization' : f'Bearer {token}'} )
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_centrosPOST_ko_no_login():
-    pass
+    data = {}
+    data['nombre'] = 'centro1'
+    data['direccion'] = 'direccion'
+    response = requests.post(url = f'{URL}/centros', json = data, headers = {} )
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
+"""
 def test_centrosPOST_ko_bad_method():
     pass
+"""
 
 def test_centrosPOST_ko_no_data():
-    pass
-
-def test_centrosPOST_ko_bad_rol():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.post(url = f'{URL}/centros', json = {}, headers = {'Authorization' : f'Bearer {token}'} )
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_centrosPOST_ko_no_direccion():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['nombre'] = 'centro1'
+    #data['direccion'] = 'direccion'
+    response = requests.post(url = f'{URL}/centros', json = data, headers = {'Authorization' : f'Bearer {token}'} )
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_centrosPOST_ko_no_nombre():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    #data['nombre'] = 'centro1'
+    data['direccion'] = 'direccion'
+    response = requests.post(url = f'{URL}/centros', json = data, headers = {'Authorization' : f'Bearer {token}'} )
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 def test_centrosPOST_ko_existe():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    data = {}
+    data['nombre'] = 'centro1'
+    data['direccion'] = 'direccion'
+    response = requests.post(url = f'{URL}/centros', json = data, headers = {'Authorization' : f'Bearer {token}'} )
+    code = 401
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
 
 # /admin/centros GET
 def test_centrosGET_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response= requests.get(url = f'{URL}/centros', headers= {'Authorization': f'Bearer {token}'})
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
+    assert len(response.json()) > 1, "La respuesta ha de contener más de un centro"
+
 
 def test_centrosGET_ko_bad_rol():
-    pass
+    token = _login(user = 'paciente01', password = '1234567890')
+    response= requests.get(url = f'{URL}/centros', headers= {'Authorization': f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
 
 def test_centrosGET_ko_no_login():
-    pass
+    response= requests.get(url = f'{URL}/centros', headers= {})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
+
+"""
 def test_centrosGET_ko_bad_method():
     pass
-
+"""
 
 # /admin/centros/<id>
 
 def test_centrosID_ok():
-    pass
+    token = _login(user = 'admin', password = 'password')
+    response = requests.get(url = f'{URL}/centros/1', headers = {'Authorization' : f'Bearer {token}'})
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta ha de contener los datos de usuario"
+
 
 def test_centrosID_ko_bad_rol():
-    pass
+    token = _login(user = 'paciente02', password = '1234567890')
+    response = requests.get(url = f'{URL}/centros/1', headers = {'Authorization' : f'Bearer {token}'})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
 
 def test_centrosID_ko_no_login():
-    pass
+    response = requests.get(url = f'{URL}/centros/1', headers = {})
+    code = 403
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+
+
 
 def test_centrosID_ko_bad_method():
-    pass
-
-def test_centrosID_ko_no_exists():
-    pass
-
-
-"""
-# /auth/login service *********************************************************************
-def test_login_ok():
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password'})
-    assert response.status_code == 200, "El codigo de estado debe ser 200"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'token' in response.json(), 'La respuesta debe contener un token.'
-
-def test_login_ko_password():
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin', 'password' : 'password2'})
-    assert response.status_code == 403, "El codigo de estado debe ser 403"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'msg' in response.json(), 'El mensaje debe estar en el token'
-
-def test_login_ko_username():
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin2', 'password' : 'password'})
-    assert response.status_code == 403, "El codigo de estado debe ser 403"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'msg' in response.json(), 'El mensaje debe estar en el token'
-
-def test_login_no_user():
-    response = requests.post(url = f'{URL}/login', json = {'password' : 'password'})
-    assert response.status_code == 401, "El codigo de estado debe ser 401"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'msg' in response.json(), 'El mensaje debe estar en el token'
-
-def test_login_no_password():
-    response = requests.post(url = f'{URL}/login', json = {'user' : 'admin'})
-    assert response.status_code == 401, "El codigo de estado debe ser 401"
-    assert response.json() is not None, 'La respuesta debe ser json'
-    assert 'msg' in response.json(), 'El mensaje debe estar en el token'
-
-def test_login_no_payload():
-    response = requests.post(url = f'{URL}/login')
-    code = 415
-    assert response.status_code == code, f"El codigo de estado debe ser {code}"
-
-def test_login_wrong_method():
-    response = requests.get(url = f'{URL}/login')
+    token = _login(user = 'admin', password = 'password')
+    response = requests.post(url = f'{URL}/centros/1', headers = {'Authorization' : f'Bearer {token}'})
     code = 405
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
 
-
-# /auth/check service *********************************************************************
-
-def test_check_ok():
+def test_centrosID_ko_no_exists():
     token = _login(user = 'admin', password = 'password')
-    response = requests.get(url = f'{URL}/check?rol=admin', headers = {'Authorization' : f'Bearer {token}'})
-    code = 200
+    response = requests.get(url = f'{URL}/centros/100', headers = {'Authorization' : f'Bearer {token}'})
+    code = 404
     assert response.status_code == code, f"El codigo de estado debe ser {code}"
-    assert response.json()['msg'] == 'OK', "El msg ha de ser OK"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
 
-def test_check_no_login():
-    response = requests.get(url = f'{URL}/check?rol=admin')
-    code = 401
-    assert response.status_code == code, f"El codigo de estado debe ser {code}"
-    assert 'msg' in response.json(), "La respuesta ha de contener un mensaje"
 
-def test_check_bad_rol():
-    token = _login(user = 'admin', password = 'password')
-    response = requests.get(url = f'{URL}/check?rol=secretario', headers = {'Authorization' : f'Bearer {token}'})
-    code = 403
-    assert response.status_code == code, f"El codigo de estado debe ser {code}"
-    assert 'msg' in response.json(), "La respuesta ha de contener un mensaje"
-
-def test_check_no_rol():
-    token = _login(user = 'admin', password = 'password')
-    response = requests.get(url = f'{URL}/check', headers = {'Authorization' : f'Bearer {token}'})
-    code = 401
-    assert response.status_code == code, f"El codigo de estado debe ser {code}"
-    assert 'msg' in response.json(), "La respuesta ha de contener un mensaje"
-
-# /auth/create_user ***************************************************************************
-def test_create_user_ok():
-    pass
-
-def test_create_user_ko_existe_username():
-    pass
-
-def test_create_user_ko_no_password():
-    pass
-
-def test_create_user_ko_no_username():
-    pass
-
-def test_create_user_ko_no_rol():
-    pass
-
-def test_create_user_ko_mal_rol():
-    pass
-
-def test_create_user_ko_mal_metodo():
-    pass
-
-def test_create_user_ko_no_login():
-    pass
-
-# /auth/show_all    ***************************************************************************
-
-def test_show_all_ok():
-    pass
-
-def test_show_all_ko_mal_rol():
-    pass
-
-def test_show_all_ko_no_login():
-    pass
-
-def test_show_all_ko_mal_metodo():
-    pass
-
-# /auth/show/id    ***************************************************************************
-
-def test_show_id_ok():
-    pass
-
-def test_show_id_ko_no_login():
-    pass
-
-def test_show_id_ko_mal_metodo():
-    pass
-
-# /auth/id         ****************************************************************************
-
-def test_id_ok():
-    pass
-
-def test_id_ko_no_login():
-    pass
-
-def test_id_ko_mal_metodo():
-    pass
-
-"""
