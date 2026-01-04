@@ -19,7 +19,58 @@ def _login(user : str, password: str) -> str:
 
 # /citas/citas/ POST
 def test_citasPOST_ok():
-    pass
+    token = _login(user= 'admin' , password='password')
+    data = {}
+    # Creo el doctor
+    data['rol'] = 'doctor'
+    data['username'] = 'citas_dr_1'
+    data['password'] = '1234567890'
+    data['nombre']  = 'Gabriel Reus'
+    data['especialidad'] = 'ondontologia'
+    response_doctor = requests.post(url = f'http://{SERVER}:2204/admin/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
+    print(f'Respuesta doctor: {response_doctor.status_code} msg :{response_doctor.json()}')
+    
+    # Creo el paciente
+    data = {}
+    data['rol'] = 'paciente'
+    data['username'] = 'citas_paciente_1'
+    data['password'] = '1234567890'
+    data['telefono'] = '912312312'
+    data['nombre'] = 'GRR'
+    data['estado'] = 'Activo'
+    response_paciente = requests.post(url = f'http://{SERVER}:2204/admin/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    # Creo el centro
+    data = {}
+    data['direccion'] = 'Barcelona'
+    data['nombre'] = 'citas_centro_1'
+    response_centros = requests.post(url = f'http://{SERVER}:2204/admin/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
+
+    data = {}
+    data['id_doctor'] = response_doctor.json()['payload']['id_doctor']
+    data['id_centro'] = response_centros.json()['payload']['id_centro']
+    data['id_paciente'] = response_paciente.json()['payload']['id_paciente']
+    data['fecha'] = '22/02/1982 14:01:00'
+    data['motivo'] = 'Dolor de muelas'
+    response = requests.post(url = f'{URL}/citas', json = data, headers = {'Authorization': f'Bearer {token}'})
+    print(f'Respuesta CITA: {response.status_code} msg :{response.json()}')
+    code = 200
+    assert response.status_code == code, f"El codigo de estado debe ser {code}"
+    assert 'msg' in response.json(), "La respuesta  ha de contener un mensaje"
+    assert 'payload' in response.json(), "La respuesta  ha de contener un payload"
+
+    """
+    if data.get('id_doctor') is None:
+        return jsonify({'msg' : 'No hemos recibido el doctor'}), 401, {'Content-type' : 'application/json'}
+    if data.get('id_centro') is None:
+        return jsonify({'msg' : 'No hemos recibido el centro'}), 401, {'Content-type' : 'application/json'}
+    if data.get('id_paciente') is None:
+        return jsonify({'msg' : 'No hemos recibido el paciente'}), 401, {'Content-type' : 'application/json'}
+    if data.get('fecha') is None:
+        return jsonify({'msg' : 'No hemos recibido la fecha y hora'}), 401, {'Content-type' : 'application/json'}
+    if data.get('motivo') is None:
+        return jsonify({'msg' : 'No hemos recibido el motivo'}), 401, {'Content-type' : 'application/json'}
+    """
 
 def test_citasPOST_ko_bad_rol():
     pass
@@ -33,13 +84,13 @@ def test_citasPOST_ko_bad_method():
 def test_citasPOST_ko_no_data():
     pass
 
-def test_citasPOST_ko_bad_rol():
+def test_citasPOST_ko_mal_rol():
     pass
 
-def test_citasPOST_ko_no_telf():
+def test_citasPOST_ko_no_fecha():
     pass
 
-def test_citasPOST_ko_no_nombre():
+def test_citasPOST_ko_no_motivo():
     pass
 
 def test_citasPOST_ko_no_estado():

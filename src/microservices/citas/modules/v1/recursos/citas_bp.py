@@ -16,7 +16,7 @@ from db import db
 #import modules.v1.modelos.usuario
 from modules.v1.modelos.citas import Citas
 
-AUTH_MICROSERVICE_URL = "http://" + os.getenv('AUTHENTICATION_HOST') + ":" + os.getenv('AUTHENTICATION_PORT') + "/auth"
+AUTH_MICROSERVICE_URL = "http://" + os.getenv('AUTHENTICATION_HOST') + ":" + os.getenv('AUTHENTICATION_PORT') + "/auth/"
 ADMIN_MICROSERVICE_URL = "http://" + os.getenv('ADMIN_HOST') + ":" + os.getenv('ADMIN_PORT') + "/admin"
 ITEMS_POR_PAGINA = int(os.getenv('ITEMS_POR_PAGINA'))
 
@@ -40,10 +40,33 @@ def require_rol(roles_requeridos : list):
                 resp = requests.get(url = AUTH_MICROSERVICE_URL + "check", params= {'rol' : rol}, headers= {'Authorization' : f"Bearer {token}"})
                 if resp.status_code == 200:
                     return f(*args, **kwargs)        
-            return jsonify({'msg': 'Acceso no autorizado'}), 403, {'Content-type' : 'application/json'}
+            return jsonify({'msg': f'Acceso no autorizado'}), 403, {'Content-type' : 'application/json'}
         return wrapper
     return decorador_interno
 
+DATETIME_STR_FORMAT = '%d/%m/%Y %H:%M:%S'
+
+def str_2_datetime(fecha: str) -> datetime:
+    # Convierte la fecha de string a datetime
+    format = DATETIME_STR_FORMAT
+    datetime_str = datetime.datetime.strptime(fecha, format)
+    return datetime_str
+
+def datetime_2_str(fecha: datetime) -> str:
+    # Convierte la fecha de datetime a string
+    format = DATETIME_STR_FORMAT
+    #dateTime_str = time.strftime(format, fecha)
+    dateTime_str = fecha.strftime(format)
+    return dateTime_str
+
+def check_datetime_format(fecha: str) -> bool:
+    # Chequeamos que la fecha y hora estan en formato correcto.
+    format = DATETIME_STR_FORMAT
+    try:
+        res = bool(datetime.datetime.strptime(fecha, format))
+    except ValueError:
+        res = False
+    return res
 
 @citas_v1_bp.route('/citas', methods = ['POST'])
 @require_rol(['admin', 'paciente'])
@@ -73,8 +96,8 @@ def create_cita():
         return jsonify({'msg' : 'No hemos recibido el centro'}), 401, {'Content-type' : 'application/json'}
     if data.get('id_paciente') is None:
         return jsonify({'msg' : 'No hemos recibido el paciente'}), 401, {'Content-type' : 'application/json'}
-    if data.get('fecha') is None:
-        return jsonify({'msg' : 'No hemos recibido la fecha y hora'}), 401, {'Content-type' : 'application/json'}
+    if data.get('fecha') is None or check_datetime_format(data.get('fecha')) == False:
+        return jsonify({'msg' : 'No hemos recibido la fecha y hora en formato correcto DD/MM/YYYY HH:MM:SS'}), 401, {'Content-type' : 'application/json'}
     if data.get('motivo') is None:
         return jsonify({'msg' : 'No hemos recibido el motivo'}), 401, {'Content-type' : 'application/json'}
     
@@ -95,10 +118,10 @@ def create_cita():
     if centro_response.status_code != 200:
         return centro_response.json(), centro_response.status_code, {'Content-type' : 'application/json'}
     # Check si el paciente existe y está activo.
-    paciente_response = requests.get(url = f'{ADMIN_MICROSERVICE_URL}/admin/pacientes/{data["id_paciente"]}', headers = {'Authorization' : auth_header})
+    paciente_response = requests.get(url = f'{ADMIN_MICROSERVICE_URL}/pacientes/{data["id_paciente"]}', headers = {'Authorization' : auth_header})
     if paciente_response.status_code != 200:
         return paciente_response.json(), paciente_response.status_code, {'Content-type' : 'application/json'}
-    auth_response = requests.get(url= f'{AUTH_MICROSERVICE_URL}/auth/id', headers={'Authorization' : auth_header})
+    auth_response = requests.get(url= f'{AUTH_MICROSERVICE_URL}/id', headers={'Authorization' : auth_header})
     if auth_response.status_code != 200:
         return auth_response.json(), auth_response.status_code, {'Content-type' : 'application/json'}
     id_usuario = auth_response.json()['payload']['id']
@@ -113,7 +136,7 @@ def create_cita():
         id_centro = data['id_centro'], 
         id_paciente = data['id_paciente'], 
         id_usuario_registra = id_usuario,
-        fecha = data['fecha'], 
+        fecha = str_2_datetime(data['fecha']), 
         motivo = data['motivo'], 
         estado = 'Activa'
         )
@@ -169,7 +192,7 @@ def _consulta_citas_as_doctor(auth_hdr: str):
     # Se usan query params para aplicar los filtros.
     
     # Primero obtengo el id del doctor que lo consulta (va en el token jwt)
-    user_response = requests.get(url= f'{AUTH_MICROSERVICE_URL}/auth/id', headers={'Authorization' : auth_hdr})
+    user_response = requests.get(url= f'{AUTH_MICROSERVICE_URL}/id', headers={'Authorization' : auth_hdr})
     if user_response != 200:
         return user_response.json(), user_response.status_code, {'Content-type' : 'application/json'}
     # Consulta el id del doctor segun el id_usuario.
@@ -197,13 +220,13 @@ def consulta_citas():
     # Obtenemos  el token
     auth_header = request.headers.get('Authorization')
     # Probamos los roles y segun el rol ejecutamos una u otra función.
-    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/auth/check', params = {'rol' : 'admin'} ,headers = {'Authorization' : auth_header})
+    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/check', params = {'rol' : 'admin'} ,headers = {'Authorization' : auth_header})
     if response.status_code == 200:
         return _consulta_citas_as_admin(auth_hdr=auth_header)
-    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/auth/check', params = {'rol' : 'secretario'} ,headers = {'Authorization' : auth_header})
+    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/check', params = {'rol' : 'secretario'} ,headers = {'Authorization' : auth_header})
     if response.status_code == 200:
         return _consulta_citas_as_secretario(auth_hdr=auth_header)
-    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/auth/check', params = {'rol' : 'doctor'} ,headers = {'Authorization' : auth_header})
+    response = requests.get(url = f'{AUTH_MICROSERVICE_URL}/check', params = {'rol' : 'doctor'} ,headers = {'Authorization' : auth_header})
     if response.status_code == 200:
         return _consulta_citas_as_doctor(auth_hdr=auth_header)
 
