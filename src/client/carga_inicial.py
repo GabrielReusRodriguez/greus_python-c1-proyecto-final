@@ -14,6 +14,7 @@ from argparse import ArgumentParser
 import requests
 from requests import RequestException
 
+
 JWT_TOKEN = ''
 
 
