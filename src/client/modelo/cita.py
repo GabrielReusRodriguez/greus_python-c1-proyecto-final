@@ -2,6 +2,7 @@
 class Cita():
 
     def __init__(self, fecha: str, motivo: str, estado: str, id_paciente: int, id_doctor: int, id_centro: int , id_usuario: int):
+        self.id_cita = -1
         self.fecha = fecha
         self.motivo = motivo
         self.estado = estado

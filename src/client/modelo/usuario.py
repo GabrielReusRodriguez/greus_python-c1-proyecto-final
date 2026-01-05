@@ -2,6 +2,7 @@
 class Usuario():
 
     def __init__(self, username: str, password :str, rol : str):
+        self.id_usuario = -1
         self.username = username
         self.password = password
         self.rol = rol

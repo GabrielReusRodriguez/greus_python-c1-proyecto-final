@@ -5,6 +5,7 @@ class Paciente(Usuario):
 
     def __init__(self, int, username: str, password :str, nombre: str, telefono: str, estado: str):
         Usuario.__init__(self, username= username, password= password, rol = 'paciente')
+        self.id_paciente = -1
         self.nombre = nombre
         self.telefono = telefono
         self.estado = estado
