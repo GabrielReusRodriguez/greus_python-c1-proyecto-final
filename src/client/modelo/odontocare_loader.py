@@ -14,12 +14,12 @@ from dotenv import load_dotenv
 
 class OdontocareLoader():
 
-    USERNAME = 'admin'
-    PASSWORD = 'password'
+    #USERNAME = 'admin'
+    #PASSWORD = 'password'
 
-    AUTH_URL = 'http://localhost:2203/auth'
-    ADMIN_URL = 'http://localhost:2204/admin'
-    CITAS_URL = 'http://localhost:2205/citas'
+    #AUTH_URL = 'http://localhost:2203/auth'
+    #ADMIN_URL = 'http://localhost:2204/admin'
+    #CITAS_URL = 'http://localhost:2205/citas'
 
     def __init__(self, data: OdontocareData):
         self.data = data
@@ -28,6 +28,10 @@ class OdontocareLoader():
         load_dotenv()
         USERNAME = os.getenv('USERNAME')
         PASSWORD = os.getenv('PASSWORD')
+
+        AUTH_URL =  f'http://{os.getenv('AUTH_SERVER')}:{os.getenv('AUTH_PORT')}/auth'
+        ADMIN_URL = f'http://{os.getenv('ADMIN_SERVER')}:{os.getenv('ADMIN_PORT')}/admin'
+        CITAS_URL = f'http://{os.getenv('CITAS_SERVER')}:{os.getenv('CITAS_PORT')}/citas'
 
     # Defino los webservices de la api rest 
     def _ws_login(user: str, password: str) -> requests.Response:
