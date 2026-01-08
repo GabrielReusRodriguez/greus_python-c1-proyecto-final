@@ -10,7 +10,12 @@ from .paciente import Paciente
 from .secretario import Secretario
 from dotenv import load_dotenv
 
+"""
+En esta clase recibimos uns instancia de OdontocareData que básicamente tiene listas de instancias de Admin, Centro, Doctor, Cita...
 
+Para que acabemso iterando una por una y enviándolas todas al WS correspondiente.
+
+"""
 
 class OdontocareLoader():
 
@@ -24,6 +29,15 @@ class OdontocareLoader():
     def __init__(self, data: OdontocareData):
         self.data = data
         self.token = None
+        self.id_usuario_logged = None
+        # Creo unos diccionarios donde  guardaré los datos con la clave id_file para acceder más rapido ( no tener que iterar la lista cada vez )
+        # cuando entremos las citas ( tienen id_doctor, id_centro...) 
+        self.centros = {}
+        self.admins = {}
+        self.secretarios = {}
+        self.pacientes= {}
+        self.doctores = {}
+
         # Importo el fichero .env donde tengo usuario y contraseña de inicuio del admin.
         load_dotenv()
         USERNAME = os.getenv('USERNAME')
@@ -43,6 +57,10 @@ class OdontocareLoader():
             print(f'Error al hacer login user {user}')
         return response
     
+    def _ws_get_logged_user_id(self, token: str) -> requests.Response:
+        response = request.get(url = f'{AUTH_URL}/id', headers = {'Authorization' : f'Bearer {token}'})
+        return response
+
     def _ws_new_user(self, token: str,user: dict) -> requests.Response:
         data = {    'username': user['username'], 
                     'password': user['password'], 
@@ -122,24 +140,28 @@ class OdontocareLoader():
         response = self._ws_new_admin(admin = admin.to_dict())
         if response.status_code == 200:
             admin.from_dict(diccionario=response.json()['payload'])
+            self.admins[admin.id_in_file] = admin.id_usuario
         return response
 
     def _new_secretario(self, secretario: Secretario) -> requests.Response:
         response = self._ws_new_secretario(secretario= secretario.to_dict())
         if response.status_code == 200:
             secretario.from_dict(diccionario= response.json()['payload'])
+            self.secretarios[secretario.id_in_file] = secretario.id_usuario
         return response
     
     def _new_doctor(self, dr : Doctor) -> requests.Response:
         response = self._ws_new_doctor(dr= dr.to_dict())
         if response.status_code == 200:
             dr.from_dict(response.json()['payload'])
+            self.doctores[dr.id_in_file] = dr.id_doctor
         return response
 
     def _new_centro(self, centro: Centro) -> requests.Response:
         response = self._ws_new_centro(centro = centro.to_dict())
         if response.status_code == 200:
             centro.from_dict(diccionario= response.json()['payload'])
+            self.centros[centro.id_in_file] = centro.id_centro
         return response
 
     def _new_cita(self, cita: Cita) ->requests.Response:
@@ -170,15 +192,27 @@ class OdontocareLoader():
             response = self._new_admin(admin = admin)
             if response.status_code != 200:
                 is_Error = True
+                print(f'ERROR: hemos detectado un error al crear un admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
                 # Si es el primer admin agregado, hago login al nuevo para no hacer todo con el admin default.
-                if is_primer_admin:
-                    response_login = self._ws_login(user = admin.username, password= admin.password)
-                    if response_login.status_code != 200:
-                        is_Error = False
-                        break
-                    is_primer_admin = False
-
+            if is_primer_admin:
+                response_login = self._ws_login(user = admin.username, password= admin.password)
+                if response_login.status_code != 200:
+                    print(f'ERROR: hemos detectado un error al hacer login, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                    is_Error = True
+                    break
+                # Obtengo el id de usuario logado.
+                response_id = self._ws_get_logged_user_id(token = self.token)
+                if response_id.status_code != 200:
+                    isError = True
+                    print(f'ERROR: hemos detectado un error al crear un admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                    break
+                if response_id.get('payload') is None or response_id.get('payload').get('id') is None:
+                    isError = True
+                    print(f'ERROR: hemos detectado un error al crear un admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                    break
+                self.id_usuario_logged = response_id['payload']['id']
+                is_primer_admin = False
         return is_Error
         
     def _load_doctors(self):
@@ -187,6 +221,7 @@ class OdontocareLoader():
             response = self._new_doctor(dr = doctor)
             if response.status_code != 200:
                 is_Error = True
+                print(f'ERROR: hemos detectado un error al crear un doctor, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
         return is_Error
 
@@ -196,6 +231,7 @@ class OdontocareLoader():
             response = self._new_secretario(secretario= secretario)
             if response.status_code != 200:
                 is_Error = True
+                print(f'ERROR: hemos detectado un error al crear un secretario, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
         return is_Error
 
@@ -206,6 +242,7 @@ class OdontocareLoader():
             # En caso que haya un error, paro y salgo.
             if response.status_code != 200:
                 is_Error = True
+                print(f'ERROR: hemos detectado un error al crear un centro, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
         return is_Error
 
@@ -215,11 +252,31 @@ class OdontocareLoader():
             response = self._ws_new_paciente(paciente= paciente)
             if response.status_code != 200:
                 isError = True
+                print(f'ERROR: hemos detectado un error al crear un paciente, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                break
         return isError
         
-
+    # Carga las citas
     def _load_citas(self):
         is_Error = False
+        for cita in self.data.citas:
+            # Vamos a buscar los ids de las entidades creadas en el WS ya que tenemos las ids de los ficheros.
+            id_centro = self.centros.get(cita.id_centro)
+            id_dr = self.doctores.get(cita.id_doctor)
+            id_paciente = self.pacientes.get(cita.id_paciente)
+            if id_centro is None or id_dr is None or id_paciente is None:
+                isError = True
+                print(f'ERROR: hemos encontrado un campo que falta creando citas id_centro:{id_centro}, id_dr: {id_dr}, id_paciente: {id_paciente}')
+                break
+            cita.id_centro = id_centro
+            cita.id_doctor = id_doctor
+            cita.id_paciente = id_paciente
+            cita.id_usuario_registra = self.id_usuario_logged
+            response = self._ws_new_cita(cita= cita)
+            if response.status_code != 200:
+                isError = True
+                print(f'ERROR: hemos detectado un error al crear la cita, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                break
         return isError
         
 
