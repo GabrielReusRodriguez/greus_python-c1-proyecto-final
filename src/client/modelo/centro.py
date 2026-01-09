@@ -6,7 +6,7 @@ class Centro():
         # Lo usaremos para vincular con las citas id_doctor id_usuario_registra...
         self.id_in_file = id_in_file
         self.id_centro = None
-        self.nombre = nombre, 
+        self.nombre = nombre 
         self.direccion = direccion
 
     def to_dict(self):

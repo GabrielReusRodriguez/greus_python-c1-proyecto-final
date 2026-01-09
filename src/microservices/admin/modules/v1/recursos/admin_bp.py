@@ -276,7 +276,8 @@ def create_centro():
         return jsonify({'msg': 'No hemos recibido el nombre'}), 401, {'Content-type' : 'application/json'}
 
     # Check si existe el centro
-    cent = db.session.query(CentroMedico).filter(CentroMedico.nombre == data['nombre']).first()
+    #cent = db.session.query(CentroMedico).filter(CentroMedico.nombre == data['nombre']).first()
+    cent = db.session.query(CentroMedico).filter(CentroMedico.nombre == data.get('nombre')).first()
     if cent is not None:
         return jsonify({'msg' : 'El centro ya existe'}), 401, {'Content-type' : 'application/json'}
     # Creamos el centro...

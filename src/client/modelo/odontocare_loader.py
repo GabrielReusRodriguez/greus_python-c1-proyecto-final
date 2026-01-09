@@ -177,8 +177,9 @@ class OdontocareLoader():
 
     def _new_centro(self, centro: Centro) -> requests.Response:
         response = self._ws_new_centro(token= self.token, centro = centro.to_dict())
-        print(f'CENTRO: {response}')
+        #print(f'CENTRO: {response}')
         if response.status_code == 200:
+            #print(f'\tjson: {response.json()}')
             centro.from_dict(diccionario= response.json()['payload'])
             self.centros[centro.id_in_file] = centro.id_centro
         return response
@@ -213,12 +214,12 @@ class OdontocareLoader():
             return
 
     def _load_admins(self):
-        is_Error = False
+        is_Ok = True
         is_primer_admin = True
         for admin in self.data.admins:
             response = self._new_admin(admin = admin)
             if response.status_code != 200:
-                is_Error = True
+                is_Ok = False
                 print(f'ERROR: hemos detectado un error al crear un admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
                 # Si es el primer admin agregado, hago login al nuevo para no hacer todo con el admin default.
@@ -226,74 +227,74 @@ class OdontocareLoader():
                 response_login = self._ws_login(user = admin.username, password= admin.password)
                 if response_login.status_code != 200:
                     print(f'ERROR: hemos detectado un error al hacer login, return code -> {response.status_code} msg -> {response.json()['msg']}')
-                    is_Error = True
+                    is_Ok = False
                     break
                 # Obtengo el id de usuario logado.
                 response_id = self._ws_get_logged_user_id(token = self.token)
                 if response_id.status_code != 200:
-                    isError = True
+                    is_Ok = False
                     print(f'ERROR: hemos detectado un error al obtener la id del admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
                     break
                 if response_id.json().get('payload') is None or response_id.json().get('payload').get('id') is None:
-                    isError = True
+                    is_Ok = False
                     print(f'ERROR: hemos detectado un error al obtener la id del admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
                     break
                 self.id_usuario_logged = response_id.json()['payload']['id']
                 is_primer_admin = False
-        return is_Error
+        return is_Ok
         
     def _load_doctors(self):
-        is_Error = False
+        is_Ok = True
         for doctor in self.data.doctores:
             response = self._new_doctor(dr = doctor)
             if response.status_code != 200:
-                is_Error = True
+                is_Ok = False
                 print(f'ERROR: hemos detectado un error al crear un doctor, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
-        return is_Error
+        return is_Ok
 
     def _load_secretarios(self):
-        is_Error = False
+        is_Ok = True
         for secretario in self.data.secretarios:
             response = self._new_secretario(secretario= secretario)
             if response.status_code != 200:
-                is_Error = True
+                is_Ok = False
                 print(f'ERROR: hemos detectado un error al crear un secretario, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
-        return is_Error
+        return is_Ok
 
     def _load_centros(self):
-        is_Error = False
+        is_Ok = True
         for centro in self.data.centros:
             response = self._new_centro(centro = centro)
             # En caso que haya un error, paro y salgo.
             if response.status_code != 200:
-                is_Error = True
+                is_Ok = False
                 #print(f'ERROR: hemos detectado un error al crear un centro, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 print(f'ERROR: hemos detectado un error al crear un centro, return code -> {response}')
                 break
-        return is_Error
+        return is_Ok
 
     def _load_pacientes(self):
-        is_Error = False
+        is_Ok = True
         for paciente in self.data.pacientes:
             response = self._new_paciente(paciente= paciente)
             if response.status_code != 200:
-                is_Error = True
+                is_Ok = False
                 print(f'ERROR: hemos detectado un error al crear un paciente, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
-        return is_Error
+        return is_Ok
         
     # Carga las citas
     def _load_citas(self):
-        is_Error = False
+        is_Ok = True
         for cita in self.data.citas:
             # Vamos a buscar los ids de las entidades creadas en el WS ya que tenemos las ids de los ficheros.
             id_centro = self.centros.get(cita.id_centro)
             id_dr = self.doctores.get(cita.id_doctor)
             id_paciente = self.pacientes.get(cita.id_paciente)
             if id_centro is None or id_dr is None or id_paciente is None:
-                isError = True
+                is_Ok = False
                 print(f'ERROR: hemos encontrado un campo que falta creando citas id_centro:{id_centro}, id_dr: {id_dr}, id_paciente: {id_paciente}')
                 break
             cita.id_centro = id_centro
@@ -302,10 +303,10 @@ class OdontocareLoader():
             cita.id_usuario_registra = self.id_usuario_logged
             response = self._ws_new_cita(cita= cita)
             if response.status_code != 200:
-                isError = True
+                is_Ok = False
                 print(f'ERROR: hemos detectado un error al crear la cita, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
-        return isError
+        return is_Ok
         
 
     
