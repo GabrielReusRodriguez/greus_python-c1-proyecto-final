@@ -19,14 +19,24 @@ Para que acabemso iterando una por una y enviándolas todas al WS correspondient
 
 class OdontocareLoader():
 
-    #USERNAME = 'admin'
-    #PASSWORD = 'password'
+    USERNAME = ''
+    PASSWORD = ''
+    AUTH_URL = ''
+    ADMIN_URL = ''
+    CITAS_URL = ''
 
     #AUTH_URL = 'http://localhost:2203/auth'
     #ADMIN_URL = 'http://localhost:2204/admin'
     #CITAS_URL = 'http://localhost:2205/citas'
 
     def __init__(self, data: OdontocareData):
+        
+        global USERNAME
+        global PASSWORD
+        global AUTH_URL
+        global ADMIN_URL
+        global CITAS_URL
+
         self.data = data
         self.token = None
         self.id_usuario_logged = None
@@ -38,6 +48,7 @@ class OdontocareLoader():
         self.pacientes= {}
         self.doctores = {}
 
+
         # Importo el fichero .env donde tengo usuario y contraseña de inicuio del admin.
         load_dotenv()
         USERNAME = os.getenv('USERNAME')
@@ -48,7 +59,8 @@ class OdontocareLoader():
         CITAS_URL = f'http://{os.getenv('CITAS_SERVER')}:{os.getenv('CITAS_PORT')}/citas'
 
     # Defino los webservices de la api rest 
-    def _ws_login(user: str, password: str) -> requests.Response:
+    def _ws_login(self, user: str, password: str) -> requests.Response:
+        global AUTH_URL
         data = {'user' : user, 'password' : password}
         response = requests.post(url = f'{AUTH_URL}/login', json = data)
         if response.status_code == 200:
@@ -58,7 +70,8 @@ class OdontocareLoader():
         return response
     
     def _ws_get_logged_user_id(self, token: str) -> requests.Response:
-        response = request.get(url = f'{AUTH_URL}/id', headers = {'Authorization' : f'Bearer {token}'})
+        global AUTH_URL
+        response = requests.get(url = f'{AUTH_URL}/id', headers = {'Authorization' : f'Bearer {token}'})
         return response
 
     def _ws_new_user(self, token: str,user: dict) -> requests.Response:
@@ -66,7 +79,8 @@ class OdontocareLoader():
                     'password': user['password'], 
                     'rol':      user['rol']
         }
-        response = requests.post(url = f'{AUTH_URL}/create_user', json = data, headers = {'Authentication' : f'Bearer {token}'})
+        global AUTH_URL
+        response = requests.post(url = f'{AUTH_URL}/create_user', json = data, headers = {'Authorization' : f'Bearer {token}'})
         return response
 
     def _ws_new_admin(self, token: str, admin: dict) -> requests.Response:
@@ -76,7 +90,7 @@ class OdontocareLoader():
         }
         return self._ws_new_user(token = token, user = data)
     
-    def _ws_new_secretario(self, secretario: dict) -> requests.Response:
+    def _ws_new_secretario(self, token: str, secretario: dict) -> requests.Response:
         data = {    'username': secretario['username'], 
                     'password': secretario['password'], 
                     'rol':      'secretario'
@@ -84,7 +98,8 @@ class OdontocareLoader():
         return self._ws_new_user(token = token, user = data)
 
     
-    def _ws_new_doctor(self, dr: dict) -> requests.Response:
+    def _ws_new_doctor(self,token: str, dr: dict) -> requests.Response:
+        global ADMIN_URL
         data = {
                     'username':     dr['username'], 
                     'password':     dr['password'], 
@@ -95,7 +110,8 @@ class OdontocareLoader():
         return requests.post(url = f'{ADMIN_URL}/doctores', json = data, headers = {'Authorization' : f'Bearer {token}'})
 
 
-    def _ws_new_paciente(self, paciente: dict) -> requests.Response:
+    def _ws_new_paciente(self, token: str, paciente: dict) -> requests.Response:
+        global ADMIN_URL
         data = {
                     'username':     paciente['username'], 
                     'password':     paciente['password'], 
@@ -106,14 +122,16 @@ class OdontocareLoader():
         }
         return requests.post(url = f'{ADMIN_URL}/pacientes', json = data, headers = {'Authorization' : f'Bearer {token}'})
 
-    def _ws_new_centro(self, centro: dict) -> requests.Response:
+    def _ws_new_centro(self, token: str, centro: dict) -> requests.Response:
+        global ADMIN_URL
         data =  {
                     'direccion':    centro['direccion'],
                     'nombre':       centro['nombre']
         }
         return requests.post(url = f'{ADMIN_URL}/centros', json = data, headers = {'Authorization' : f'Bearer {token}'})
 
-    def _ws_new_cita(self, cita: dict) -> requests.Response:
+    def _ws_new_cita(self, token: str, cita: dict) -> requests.Response:
+        global CITAS_URL
         """
                     id_cita (PK)
             fecha
@@ -137,42 +155,51 @@ class OdontocareLoader():
 
     # Defino las funciones que implementan los pasos para enviar los nuevos datos para cada caso.
     def _new_admin(self, admin:Admin) -> requests.Response:
-        response = self._ws_new_admin(admin = admin.to_dict())
+        response = self._ws_new_admin(token= self.token, admin = admin.to_dict())
         if response.status_code == 200:
             admin.from_dict(diccionario=response.json()['payload'])
             self.admins[admin.id_in_file] = admin.id_usuario
         return response
 
     def _new_secretario(self, secretario: Secretario) -> requests.Response:
-        response = self._ws_new_secretario(secretario= secretario.to_dict())
+        response = self._ws_new_secretario(token= self.token,secretario= secretario.to_dict())
         if response.status_code == 200:
             secretario.from_dict(diccionario= response.json()['payload'])
             self.secretarios[secretario.id_in_file] = secretario.id_usuario
         return response
     
     def _new_doctor(self, dr : Doctor) -> requests.Response:
-        response = self._ws_new_doctor(dr= dr.to_dict())
+        response = self._ws_new_doctor(token= self.token, dr= dr.to_dict())
         if response.status_code == 200:
             dr.from_dict(response.json()['payload'])
             self.doctores[dr.id_in_file] = dr.id_doctor
         return response
 
     def _new_centro(self, centro: Centro) -> requests.Response:
-        response = self._ws_new_centro(centro = centro.to_dict())
+        response = self._ws_new_centro(token= self.token, centro = centro.to_dict())
+        print(f'CENTRO: {response}')
         if response.status_code == 200:
             centro.from_dict(diccionario= response.json()['payload'])
             self.centros[centro.id_in_file] = centro.id_centro
         return response
 
     def _new_cita(self, cita: Cita) ->requests.Response:
-        response = self._ws_new_cita(cita = cita.to_dict())
+        response = self._ws_new_cita(token= self.token, cita = cita.to_dict())
         if response.status_code == 200:
             cita.from_dict(diccionario= response.json()['payload'])
+        return response
+    
+    def _new_paciente(self, paciente: Paciente) -> requests.Response:
+        response = self._ws_new_paciente(token = self.token, paciente = paciente.to_dict())
+        if response.status_code == 200:
+            paciente.from_dict(diccionario=response.json()['payload'])
         return response
 
     # Funciones de carga
     def load(self):
-        response = self._ws_login(user = self.USERNAME, password= self.PASSWORD)
+        global USERNAME
+        global PASSWORD
+        response = self._ws_login(user= USERNAME, password= PASSWORD)
         if response.status_code != 200 or self.token is None:
             return
         # Con un if llenos de ands, consigo que al primero que falle, salga y no ejecute el resto.
@@ -205,13 +232,13 @@ class OdontocareLoader():
                 response_id = self._ws_get_logged_user_id(token = self.token)
                 if response_id.status_code != 200:
                     isError = True
-                    print(f'ERROR: hemos detectado un error al crear un admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                    print(f'ERROR: hemos detectado un error al obtener la id del admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
                     break
-                if response_id.get('payload') is None or response_id.get('payload').get('id') is None:
+                if response_id.json().get('payload') is None or response_id.json().get('payload').get('id') is None:
                     isError = True
-                    print(f'ERROR: hemos detectado un error al crear un admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                    print(f'ERROR: hemos detectado un error al obtener la id del admin, return code -> {response.status_code} msg -> {response.json()['msg']}')
                     break
-                self.id_usuario_logged = response_id['payload']['id']
+                self.id_usuario_logged = response_id.json()['payload']['id']
                 is_primer_admin = False
         return is_Error
         
@@ -242,19 +269,20 @@ class OdontocareLoader():
             # En caso que haya un error, paro y salgo.
             if response.status_code != 200:
                 is_Error = True
-                print(f'ERROR: hemos detectado un error al crear un centro, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                #print(f'ERROR: hemos detectado un error al crear un centro, return code -> {response.status_code} msg -> {response.json()['msg']}')
+                print(f'ERROR: hemos detectado un error al crear un centro, return code -> {response}')
                 break
         return is_Error
 
     def _load_pacientes(self):
         is_Error = False
         for paciente in self.data.pacientes:
-            response = self._ws_new_paciente(paciente= paciente)
+            response = self._new_paciente(paciente= paciente)
             if response.status_code != 200:
-                isError = True
+                is_Error = True
                 print(f'ERROR: hemos detectado un error al crear un paciente, return code -> {response.status_code} msg -> {response.json()['msg']}')
                 break
-        return isError
+        return is_Error
         
     # Carga las citas
     def _load_citas(self):

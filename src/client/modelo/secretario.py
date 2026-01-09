@@ -3,8 +3,8 @@ from .usuario import Usuario
 
 class Secretario(Usuario):
 
-    def __init__(self, int, username: str, password :str):
-        Usuario.__init__(self, username= username, password= password, rol = 'secretario')
+    def __init__(self, id_in_file: int, username: str, password :str):
+        Usuario.__init__(self, username= username, password= password, rol = 'secretario', id_in_file= id_in_file)
 
     """
     def to_dict(self):

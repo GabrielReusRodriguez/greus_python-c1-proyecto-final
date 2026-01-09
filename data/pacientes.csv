@@ -1,0 +1,16 @@
+id,username,password,nombre,telefono,estado
+1,paciente1,pwdpaciente1,nombre_paciente1,1234567890,Activo
+2,paciente2,pwdpaciente2,nombre_paciente2,1234567890,Activo
+3,paciente3,pwdpaciente3,nombre_paciente3,1234567890,Activo
+4,paciente4,pwdpaciente4,nombre_paciente4,1234567890,Activo
+5,paciente5,pwdpaciente5,nombre_paciente5,1234567890,Activo
+6,paciente6,pwdpaciente6,nombre_paciente6,1234567890,Activo
+7,paciente7,pwdpaciente7,nombre_paciente7,1234567890,Activo
+8,paciente8,pwdpaciente8,nombre_paciente8,1234567890,Activo
+9,paciente9,pwdpaciente9,nombre_paciente9,1234567890,Activo
+10,paciente10,pwdpaciente10,nombre_paciente10,1234567890,Activo
+11,paciente11,pwdpaciente11,nombre_paciente11,1234567890,Activo
+12,paciente12,pwdpaciente12,nombre_paciente12,1234567890,Activo
+13,paciente13,pwdpaciente13,nombre_paciente13,1234567890,Activo
+14,paciente14,pwdpaciente14,nombre_paciente14,1234567890,Inactivo
+15,paciente15,pwdpaciente15,nombre_paciente15,1234567890,Activo

@@ -13,3 +13,4 @@ pymongo
 flask-sqlalchemy
 PyJWT
 jsonschema
+dotenv

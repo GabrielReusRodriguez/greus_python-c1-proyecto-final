@@ -3,8 +3,8 @@ from .usuario import Usuario
 
 class Paciente(Usuario):
 
-    def __init__(self, int, username: str, password :str, nombre: str, telefono: str, estado: str):
-        Usuario.__init__(self, username= username, password= password, rol = 'paciente')
+    def __init__(self, id_in_file:  int, username: str, password :str, nombre: str, telefono: str, estado: str):
+        Usuario.__init__(self, username= username, password= password, rol = 'paciente', id_in_file=  id_in_file)
         self.id_paciente = None
         self.nombre = nombre
         self.telefono = telefono

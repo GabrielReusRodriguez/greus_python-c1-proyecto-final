@@ -121,6 +121,8 @@ def create_cita():
     paciente_response = requests.get(url = f'{ADMIN_MICROSERVICE_URL}/pacientes/{data["id_paciente"]}', headers = {'Authorization' : auth_header})
     if paciente_response.status_code != 200:
         return paciente_response.json(), paciente_response.status_code, {'Content-type' : 'application/json'}
+    if paciente_response.json()['payload']['estado'] == 'Inactivo':
+        return jsonify({'msg' : 'El paciente está inactivo'}), 401, {'Authorizacion' : auth_header}
     auth_response = requests.get(url= f'{AUTH_MICROSERVICE_URL}/id', headers={'Authorization' : auth_header})
     if auth_response.status_code != 200:
         return auth_response.json(), auth_response.status_code, {'Content-type' : 'application/json'}
