@@ -86,7 +86,7 @@ def main():
     data_cita['fecha'] = '22/02/2026 18:30:00'
 
     
-    response = requests.post(url = f'http://{os.getenv('CITAS_SERVER')}:{os.getenv('CITAS_PORT')}/citas/citas', json = data_cita, headers={'Authorization': f'Bearer {token}'})
+    response = requests.post(url = f'http://{os.getenv('CITAS_SERVER')}:{os.getenv('CITAS_PORT')}/citas/', json = data_cita, headers={'Authorization': f'Bearer {token}'})
     if response.status_code == 200:
         print (f'Cita creada con exito: request: {data_cita} \n\n response {response.json()}')
         exit (0)

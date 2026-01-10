@@ -68,7 +68,7 @@ def check_datetime_format(fecha: str) -> bool:
         res = False
     return res
 
-@citas_v1_bp.route('/citas', methods = ['POST'])
+@citas_v1_bp.route('/', methods = ['POST'])
 @require_rol(['admin', 'paciente'])
 def create_cita():
 
@@ -226,7 +226,7 @@ def _consulta_citas_as_doctor(auth_hdr: str):
     return jsonify({'msg' : 'OK', 'payload' : json_citas}), 200, {'Content-type' : 'application/json'}
 
 
-@citas_v1_bp.route('/citas', methods = ['GET'])
+@citas_v1_bp.route('/', methods = ['GET'])
 @require_rol(['admin','doctor', 'secretario'])
 def consulta_citas():
     # Se usa para listas las citas
@@ -249,7 +249,7 @@ def consulta_citas():
     if response.status_code == 200:
         return _consulta_citas_as_doctor(auth_hdr=auth_header)
 
-@citas_v1_bp.route('/citas/<int:id>', methods = ['PUT'])
+@citas_v1_bp.route('/<int:id>', methods = ['PUT'])
 @require_rol(['admin','secretario'])
 def cancela_cita(id:int):
     # Se usa para cambiar de estado la cita ( cancelarla )
