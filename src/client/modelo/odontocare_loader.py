@@ -8,7 +8,7 @@ from .centro import Centro
 from .doctor import Doctor
 from .paciente import Paciente
 from .secretario import Secretario
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 """
 En esta clase recibimos uns instancia de OdontocareData que básicamente tiene listas de instancias de Admin, Centro, Doctor, Cita...
@@ -50,7 +50,7 @@ class OdontocareLoader():
 
 
         # Importo el fichero .env donde tengo usuario y contraseña de inicuio del admin.
-        load_dotenv()
+        #load_dotenv()
         USERNAME = os.getenv('USERNAME')
         PASSWORD = os.getenv('PASSWORD')
 
