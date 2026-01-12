@@ -117,7 +117,6 @@ class OdontocareData():
             return
         if df is None: 
             print(f'ERROR al cargar el dataframe de pacientes: {self.file_centros}')
-        print(f'Centros cargados \n {df}')
         # Itero una a una para crear los objetos.
         for r in df.itertuples(index = False):
             centro = Centro(nombre= r.nombre, direccion= r.direccion, id_in_file= r.id)

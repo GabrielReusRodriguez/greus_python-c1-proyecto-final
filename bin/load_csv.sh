@@ -9,7 +9,7 @@ VENV_PATH="${SCRIPT_DIR}/../.venv"
 #$("${VENV_PATH}/bin/python3 ${SCRIPT_DIR}/../src/client/odontocare_client.py")
 
 echo "DIR: ${SCRIPT_DIR}"
-ORDEN="${VENV_PATH}/bin/python3 ${SCRIPT_DIR}/../src/client/odontocare_client.py \
+ORDEN="${VENV_PATH}/bin/python3 ${SCRIPT_DIR}/../src/client/carga_inicial.py \
             --admin_file ${SCRIPT_DIR}/../data/admins.csv \
             --doctor_file ${SCRIPT_DIR}/../data/doctores.csv \
             --secretarios_file ${SCRIPT_DIR}/../data/secretarios.csv \

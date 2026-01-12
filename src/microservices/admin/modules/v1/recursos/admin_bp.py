@@ -206,10 +206,12 @@ def create_paciente():
         return jsonify({'msg': 'No hemos recibido el nombre'}), 401, {'Content-type' : 'application/json'}
     if data.get('estado') is None:
         return jsonify({'msg': 'No hemos recibido el estado'}), 401, {'Content-type' : 'application/json'}
+    if data.get('rol') is None or data.get('rol') not in ('paciente'):
+        return jsonify({'msg' : 'No hemos recibido el rol correcto'}), 401, {'Content-type' : 'application/json'}
     response = requests.post(url=AUTH_MICROSERVICE_URL + "create_user", json = data, headers= {'Authorization' : auth_header})
     if response.status_code != 200:
         return response.json(), response.status_code, {'Content-type' : 'application/json'}
-    # Tenemos el user creado, ahopra creamos los datos del doctor.
+    # Tenemos el user creado, ahopra creamos los datos del paciente.
     paciente = Paciente(nombre= data.get('nombre'), telefono= data.get('telefono'),estado = data.get('estado'), id_usuario  = response.json()['payload']['id_usuario'])
     db.session.add(paciente)
     db.session.commit()
