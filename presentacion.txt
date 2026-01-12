@@ -1,0 +1,94 @@
+Esquema de presentacion (Máximo 5 minutos)
+
+Lo que piden minimo...
+
+Contenido:          Debe evidenciar claramente el funcionamiento completo del aplicativo,
+                        incluyendo la interacción entre los microservicios.
+
+Funcionamiento:     Mostrar el flujo de trabajo, desde la inicialización hasta la creación de
+                        una cita médica, destacando la comunicación RESTful.
+
+*********************************************************************************************
+
+Planteamiento
+
+Introducción -> 15 segundos
+    Saludo + Identificación.
+        Hola, soy Gabriel Reus, estudiante de la Microcredencial C1 de Python por la UOC del curso 2025-2026.
+    Explicación breve de lo que debe hacer la aplicación
+        Este es video explicativo de  mi proyecto final que consiste en un aplicativo para gestionar las visitas 
+        de una clínica odontológica tal como comenta el enunciado.
+
+
+Diseño -> 30 segundos
+    Explicar Sistema de microservicios
+        "Los microservicios pueden comunicarse entre ellos pero NO puden acceder a las BBDD de otro directamente"
+    Explicar Sistema de persistencia de datos ORM
+    Explicar Que se ha tenido que crear un admin by default ya que si no , no se puede entrar datos de forma segura.
+    Explicar que se ha utilizado Docker para ejecutar los microservicios
+
+Implementacion -> 1.5 minutos
+    Explicar la estructura de carpetas del proyecto
+        Microservicio
+            "La carpeta microservices  se compone de 3  subdirectorios, uno para cada microservicio, destacar que cada microservicio sigue el mismo esquema"
+            "La carpeta docker contiene el Dockerfile y los scripts auxiliares para desplegar el contenedor"
+            "La carpeta modelo contiene las clases python para el ORM"
+    Explicar las tecnólogias utilizadas:
+        Para los microservicios he usado Flask
+        Para la persistencia SQLite + ORM
+        Para la autenticación se usarán tokens JWT
+        Para ejecutar los servidores Docker
+        Una serie de scripts auxiliares
+    Funcionamiento
+        SQLite + ORM
+            Mostrar una clase de ejemplo y explicar la implementación por ejemplo, usuario.py del microservicio authentication
+        Microservicio authentication
+            Mostrar microservicio authentication función de login y el decorator.
+        Microservicio admin
+            Mostrar microservicio admin , la función decorator para requerir el logeo, destacar que para validarlo, llama al microservicio de autenticacion.
+            Mostrar el resto de microservicios por encima .
+        Microservicio citas
+            Mstrar microservicio de citas y enseñar como el servicio de post y put tiran de otros microservicios para validar los datos.
+        
+
+Testing -> 1 minuto
+    Explicar el sistema de ficheros de testing y los tests que se implementan habitualmente.
+    Mostrar fichero de testing de authentication.
+    Mostrar fichero de testing de admin.
+    Mostrar fichero de testing de citas.
+    Reset de server + ejecutar tests authentication
+    Reset de server + ejecutar tests admin
+    Reset de server + ejecutar tests citas
+
+Demo    -> 1.5 minutos
+    Explicar que vamos a hacer la demo de carga de datos csv
+    Mostrar los scripts auxiliares ( brevemente ) y los datos .csv
+    Hacer la demo:
+        Arrancar el servidor
+            Ejecutar /bin/restart_app.sh
+        Demostrar el estado inicial
+            Ejecutar /bin/tests/test_authentication_login.sh (Copiar el token) => Destacar que hacemos login con el admin default para simplificar el bash
+            Ejecutar /bin/tests/test_authentication_usuarios.sh (con el token) => Demostrar que solo hay creado el usuario admin default
+            Ejecutar /bin/tests/test_admin_centros.sh (con el token) => Demostrar que no hay nada creado
+            Ejecutar /bin/tests/test_admin_usuarios.sh (con el token) => Demostrar que no hay nada creado
+            Ejecutar /bin/tests/test_admin_doctores.sh (con el token) => Demostrar que no hay nada creado
+            Ejecutar /bin/tests/test_admin_pacientes.sh (con el token) => Demostrar que no hay nada creado
+        Ejecutar la carga
+            Ejecutar /bin/tests/load_csv.sh (Destacar el json que ha creado al final que es el json devuelto con la cita creada)
+        Mostrar resultados finales
+            Ejecutar /bin/tests/test_authentication_login.sh (Copiar el token) => Destacar que hacemos login con el admin default para simplificar el bash
+            Ejecutar /bin/tests/test_authentication_usuarios.sh (con el token) => Demostrar que hay creados los admins del csv
+            Ejecutar /bin/tests/test_admin_centros.sh (con el token) => Demostrar que  hay creados los centros del csv
+            Ejecutar /bin/tests/test_admin_usuarios.sh (con el token) => Demostrar que  hay creados los usuarios ( admins + secretarios) del csv
+            Ejecutar /bin/tests/test_admin_doctores.sh (con el token) => Demostrar que  hay creados los doctores del csv
+            Ejecutar /bin/tests/test_admin_pacientes.sh (con el token) => Demostrar que hay creados los pacientes del csv
+            <OPCIONAL>
+            Ejecutar /bin/tests/test_citas.sh (con el token) => Demostrar que hay creada la cita que cramos en la carga.
+
+Conclusion ->   15 segundos <OPCIONAL>
+
+Se puede grabar con mint con simplescreenrecorder , pdte testear.
+
+Para concatenar videos se puede hcaer con ffmpeg
+
+https://forums.linuxmint.com/viewtopic.php?t=325738
