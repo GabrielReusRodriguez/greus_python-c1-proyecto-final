@@ -244,4 +244,3 @@ fabric.properties
 .python-version
 myenv/
 deploy/
-*.mp4
