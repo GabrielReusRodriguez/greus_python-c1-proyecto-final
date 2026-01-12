@@ -92,3 +92,5 @@ Se puede grabar con mint con simplescreenrecorder , pdte testear.
 Para concatenar videos se puede hcaer con ffmpeg
 
 https://forums.linuxmint.com/viewtopic.php?t=325738
+
+ ffmpeg -f concat -safe 0 -i merge.txt -c copy my_vids.mp4
