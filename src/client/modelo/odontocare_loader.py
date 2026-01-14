@@ -51,8 +51,8 @@ class OdontocareLoader():
 
         # Importo el fichero .env donde tengo usuario y contraseña de inicuio del admin.
         #load_dotenv()
-        USERNAME = os.getenv('USERNAME')
-        PASSWORD = os.getenv('PASSWORD')
+        USERNAME = os.getenv('ODONTOCARE_USERNAME')
+        PASSWORD = os.getenv('ODONTOCARE_PASSWORD')
 
         AUTH_URL =  f'http://{os.getenv('AUTH_SERVER')}:{os.getenv('AUTH_PORT')}/auth'
         ADMIN_URL = f'http://{os.getenv('ADMIN_SERVER')}:{os.getenv('ADMIN_PORT')}/admin'
@@ -66,7 +66,7 @@ class OdontocareLoader():
         if response.status_code == 200:
             self.token = response.json()['token']
         else:
-            print(f'Error al hacer login user {user}')
+            print(f'Error al hacer login user {user} password : {password}')
         return response
     
     def _ws_get_logged_user_id(self, token: str) -> requests.Response:
