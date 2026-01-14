@@ -1,5 +1,0 @@
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/intro-2026-01-12_19.25.46.mp4'
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/disenyo-2026-01-12_19.30.31.mp4'
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/implementacion_carpetas-2026-01-12_20.03.37.mp4'
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/microservicios-2026-01-12_20.36.33.mp4'
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/advertencia_env-2026-01-12_20.21.40.mp4'

@@ -1,5 +1,0 @@
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/intro-2026-01-12_19.25.46.mp4'
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/demo_intro-2026-01-12_20.55.28.mp4'
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/demo_todo_vacio-2026-01-12_20.56.25.mp4'
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/demo_ejecutamos-2026-01-12_20.59.14.mp4'
-file '/home/gabriel/Dev/UOC/greus_python-c1-proyecto-final/video/demo_check_final-2026-01-12_21.00.14.mp4'
